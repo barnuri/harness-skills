@@ -4,6 +4,7 @@
 hooks/local.env
 
 **/agent-spec
+!/skills/agent-spec/
 **/__pycache__
 **/.venv
 .DS_Store
