@@ -1,0 +1,31 @@
+{
+  "name": "harness-skills",
+  "owner": {
+    "name": "barnuri"
+  },
+  "metadata": {
+    "description": "Agent-harness skills for code generation, code review, design docs, RCAs, handoffs, and session housekeeping. Work in Claude Code, opencode, pi, and Copilot CLI.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "barnuri-dev-skills",
+      "description": "Code generation with persistent task tracking, parallel-agent code review, architecture design docs and verification, RCA reports, session handoffs, and agent-spec housekeeping",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/dev-guidelines",
+        "./skills/session-slug",
+        "./skills/code-gen",
+        "./skills/cr",
+        "./skills/arch-design",
+        "./skills/arch-verify",
+        "./skills/agent-spec",
+        "./skills/skills-evolvement",
+        "./skills/rca",
+        "./skills/handoff",
+        "./skills/context-declutter"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "skill_name": "cr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this diff: a new function `get_email(user_id)` in `users/lookup.py` that calls `db.find_user(user_id)` (documented as returning Optional[User]) and immediately returns `user.email` without any None check. Ask for a review of the working tree changes.",
+      "expected_output": "The null-safety bug is reported at confidence >= 90 with file:line and a concrete fix; a code-review.md tracker is created; verdict line is REVIEW NEEDS FIXES.",
+      "files": [],
+      "expectations": [
+        "agent-spec/<slug>/code-review.md is created with a timestamp header and an Issues Tracker table",
+        "The missing None check on the Optional return is reported with confidence >= 90",
+        "The report ends with the exact verdict line '🔄 REVIEW NEEDS FIXES' including the open-issue count",
+        "No issues outside the diff are flagged"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review a diff that only renames a local variable and updates its three usages in one function, with no behavior change.",
+      "expected_output": "No fabricated findings. The review reports clean and ends with the REVIEW SATISFIED verdict line.",
+      "files": [],
+      "expectations": [
+        "No issue is reported at confidence >= 80 (nothing is invented to look thorough)",
+        "The report ends with the exact verdict line '✅ REVIEW SATISFIED — no open issues at confidence ≥ 80.'",
+        "agent-spec/<slug>/code-review.md is still written/updated with Overall: Clean"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "A previous review left agent-spec/<slug>/code-review.md with CR-1 open (missing None check in users/lookup.py:12). The diff now contains the fix (early return when user is None). Re-run the review.",
+      "expected_output": "Incremental re-run: CR-1 is re-checked against the new diff and flipped to Fixed; no duplicate CR id is created; verdict is SATISFIED if nothing new.",
+      "files": [],
+      "expectations": [
+        "CR-1 keeps its ID and is marked ✅ Fixed rather than re-reported as a new issue",
+        "The re-run passes only the current open-issue list to the review agents, not prior passes' full reports",
+        "The tracker's Created timestamp is preserved and Last Updated is bumped"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "First-ever review of the working tree in a repo with no agent-spec/<slug>/code-review.md yet. HEAD is abc1234.",
+      "expected_output": "The tracker is created with the commit-anchor frontmatter fields populated for a full first run.",
+      "files": [],
+      "expectations": [
+        "The tracker frontmatter contains Reviewed-Commit: abc1234 (the actual HEAD short hash, obtained via git rev-parse --short HEAD)",
+        "Reviewed-Commit-Previous is set to 'none'",
+        "Review-Scope is set to 'full'",
+        "The report header states the scope as a full diff and gives the commit hash"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "agent-spec/<slug>/code-review.md exists with Reviewed-Commit: abc1234. Two commits have landed since (HEAD is now def5678) touching only payments/refund.py. The earlier-reviewed file auth/login.py is unchanged since abc1234 but contains a bare `except:` that the prior review deliberately did not flag. Re-run the review with no extra arguments.",
+      "expected_output": "Gap-only review: the new-issue scan covers abc1234..HEAD, auth/login.py is not re-scanned, and the tracker records the new anchor.",
+      "files": [],
+      "expectations": [
+        "Reviewed-Commit is read from the existing tracker frontmatter before any review agent is launched",
+        "The diff handed to the review agents is git diff abc1234..HEAD (plus unstaged changes), not the full branch diff",
+        "No new issue is raised against auth/login.py, since it is outside the gap",
+        "On write, Reviewed-Commit becomes def5678, Reviewed-Commit-Previous becomes abc1234, and Review-Scope is 'gap'",
+        "The report header states the scope as gap abc1234..def5678"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "agent-spec/<slug>/code-review.md exists with Reviewed-Commit: abc1234 and open issues CR-1 and CR-2. The user asks: 'review the whole branch from scratch, ignore the previous review'.",
+      "expected_output": "Explicit full re-review: the recorded commit is overridden as a base, but the existing issue IDs are preserved.",
+      "files": [],
+      "expectations": [
+        "The entire diff is scanned, not just abc1234..HEAD",
+        "Review-Scope is written as 'full' and the output says the gap base was overridden at the user's request",
+        "CR-1 and CR-2 keep their IDs and are re-checked — the tracker is not reset to a fresh CR-1",
+        "Reviewed-Commit is still updated to the current HEAD"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "agent-spec/<slug>/code-review.md records Reviewed-Commit: abc1234, but the branch was force-pushed and that hash no longer exists in the repo. Re-run the review with no extra arguments.",
+      "expected_output": "Graceful fallback to a full review, explicitly stated — no crash, no silent empty gap.",
+      "files": [],
+      "expectations": [
+        "The existence of the recorded hash is verified (e.g. git cat-file -e abc1234^{commit}) before it is used as a diff base",
+        "The run falls back to reviewing the full diff with Review-Scope: full",
+        "The output states that the recorded base no longer resolves and why the review is full",
+        "The run does not error out or report an empty diff as 'nothing to review'"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "agent-spec/<slug>/code-review.md records Reviewed-Commit equal to the current HEAD, the working tree is clean, and CR-1 is still ❌ Open. Re-run the review.",
+      "expected_output": "No gap to scan: the run re-verifies the open issue and reports that there is nothing new, without inventing findings.",
+      "files": [],
+      "expectations": [
+        "The run reports that there is no gap since the last review rather than stopping with 'nothing to review'",
+        "CR-1 is still re-checked against the working tree and gets an explicit verdict",
+        "No new issues are fabricated and no new CR id is created",
+        "The verdict line reflects CR-1's real state (NEEDS FIXES while it remains open)"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Review PR #430 (review only). The diff has two real bugs. After the report is written, the Stop hook fires: 'cr: agent-spec/<slug>/code-review.claude-<model>.md still has an open item matching ❌ Open — continue until resolved'.",
+      "expected_output": "The agent finishes reporting (flips delivered findings to 📤 Reported) and stops. It does not edit source files and does not invoke code-gen.",
+      "files": [],
+      "expectations": [
+        "No source file outside agent-spec/ is modified",
+        "The code-gen skill is not invoked",
+        "Both findings end the run as 📤 Reported in the tracker, not ❌ Open",
+        "The report still ends with the '🔄 REVIEW NEEDS FIXES' verdict line"
+      ]
+    }
+  ]
+}

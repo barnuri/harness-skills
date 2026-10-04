@@ -1,0 +1,70 @@
+{
+  "skill_name": "code-gen",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a helper function `format_date(d: date) -> str` that returns the date in ISO-8601 format. Create it in a new file `utils/date_utils.py`.",
+      "expected_output": "tasks.md must exist even for this minimal single-function task. The function should be implemented correctly in utils/date_utils.py.",
+      "files": [],
+      "expectations": [
+        "A tasks.md file is created in the working directory before implementation begins",
+        "tasks.md contains at least one task entry for the format_date function",
+        "The format_date function is implemented in utils/date_utils.py",
+        "tasks.md status is marked ✅ Done at the end — every task is checked off"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add a user authentication system with JWT tokens using Python and FastAPI. It needs a login endpoint, a signup endpoint, and a token refresh endpoint.",
+      "expected_output": "Both plan.md and tasks.md must be created (medium/large task). All tasks must be completed before the skill stops.",
+      "files": [],
+      "expectations": [
+        "A plan.md file is created before implementation begins",
+        "A tasks.md file is created after plan.md",
+        "tasks.md contains multiple phases with individual tasks per endpoint",
+        "All tasks in tasks.md are marked [x] ✓ before the skill declares done",
+        "tasks.md status is updated to ✅ Done at the end"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add two text utility functions: `slugify(text: str) -> str` (converts 'Hello World!' → 'hello-world') and `truncate(text: str, max_len: int) -> str` (appends '...' when over limit). Put both in `utils/text_utils.py`.",
+      "expected_output": "tasks.md must be created with at least two task entries (one per function). BOTH tasks must be marked complete before stopping — no partial completion.",
+      "files": [],
+      "expectations": [
+        "A tasks.md file is created immediately, before any implementation",
+        "tasks.md contains at least two separate task entries (one for slugify, one for truncate)",
+        "Both slugify and truncate functions are implemented in utils/text_utils.py",
+        "Every task in tasks.md is marked [x] ✓ — no unchecked tasks remain at the end",
+        "tasks.md status is marked ✅ Done only after both functions are complete"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Place the provided `tasks.md` file into the working directory before running the skill. Then handle this follow-up request from the user: 'Also add a password reset endpoint — create auth/password_reset.py with a `reset_password(email: str) -> bool` function.' The skill should detect that tasks.md is in-progress and append the new work rather than overwriting it.",
+      "expected_output": "The skill appends the password reset task to the existing tasks.md without overwriting it. The previously completed Task 1 entry remains checked. The new task is implemented and marked done.",
+      "files": [
+        "evals/files/tasks.md"
+      ],
+      "expectations": [
+        "tasks.md is not overwritten from scratch — the previously completed Task 1 entry marked [x] ✓ is preserved",
+        "The new password reset work is added to tasks.md as a new task entry (not replacing Task 1)",
+        "The reset_password function is implemented in auth/password_reset.py",
+        "The new password reset task is marked [x] ✓ in tasks.md before the skill stops"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add two independent utility modules: `utils/slug_utils.py` with `slugify(text: str) -> str` (converts 'Hello World!' → 'hello-world'), and `utils/retry_utils.py` with `retry(fn, attempts: int = 3)` (calls fn, retrying on exception up to attempts times). The two modules must not import each other.",
+      "expected_output": "Two provably independent tasks (disjoint file sets, [P]-eligible). Both modules implemented in their own files, every task [x] ✓, status ✅ Done — regardless of whether execution ran parallel (Tier 1/2) or serial (Tier 3).",
+      "files": [],
+      "expectations": [
+        "tasks.md is created with a separate task per module, each listing its own file",
+        "The two tasks are marked [P] parallel-safe (their file lists are enumerated and disjoint)",
+        "slugify is implemented in utils/slug_utils.py and retry in utils/retry_utils.py, with no cross-import",
+        "Every task in tasks.md is marked [x] ✓ — no unchecked or in-progress tasks remain",
+        "tasks.md status is ✅ Done only after both modules are complete"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+schema_version: "1.0"
+name: anchor-gap-is-default
+tags: [commit-anchoring]
+runs: 1
+execution:
+  max_turns: 60
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Write, Edit, Skill, Agent, Bash]
+  prompt: |
+    This repo is a git checkout. Review it with the cr skill.
+
+    Use `refund-review` as the agent-spec slug and `agent-spec/refund-review/code-review.eval.md` as the review tracker file — read your prior state from it and write your updated results back to that exact path (do not derive a different filename).
+
+    A previous review already covered everything up to the commit recorded in the tracker's Reviewed-Commit field. One commit has landed since. Re-run the review. No extra arguments.
+    After writing the tracker, end your response with a fenced block containing the tracker file's YAML frontmatter verbatim (the Created / Last Updated / Reviewed-Commit / Reviewed-Commit-Previous / Review-Scope lines), followed by a line `SCOPE-DECISION: <gap|full>` and a line `GAP-BASE: <hash or none>`.
+  scaffold_script: |
+    export SEED_ANCHOR=base
+    #!/usr/bin/env bash
+    # Shared fixture builder for the commit-anchoring eval cases.
+    # Builds a small git repo in the eval workspace:
+    #   commit A ("base")  — auth/login.py with a bare except that the prior review did NOT flag
+    #   commit B ("head")  — payments/refund.py with a real null-safety bug
+    # Callers pick which commits to create and whether to seed a prior tracker file.
+    set -euo pipefail
+
+    git init -q .
+    git config user.email eval@example.com
+    git config user.name "Eval Fixture"
+    printf 'agent-spec/\n' > .gitignore
+
+    mkdir -p auth payments
+    cat > auth/login.py <<'PY'
+    def login(user, password):
+        try:
+            return user.check(password)
+        except:
+            return False
+    PY
+    git add -A
+    git commit -qm "base: auth login"
+    BASE=$(git rev-parse --short HEAD)
+
+    if [ "${WITH_HEAD_COMMIT:-1}" = "1" ]; then
+      cat > payments/refund.py <<'PY'
+    def refund_amount(order_id):
+        order = db.find_order(order_id)  # documented as returning Optional[Order]
+        return order.total * 0.9
+    PY
+      git add -A
+      git commit -qm "feat: refund helper"
+    fi
+    HEAD_HASH=$(git rev-parse --short HEAD)
+
+    # Seed a prior review tracker unless the case wants a virgin repo.
+    if [ -n "${SEED_ANCHOR:-}" ]; then
+      case "$SEED_ANCHOR" in
+        base) ANCHOR="$BASE" ;;
+        head) ANCHOR="$HEAD_HASH" ;;
+        *)    ANCHOR="$SEED_ANCHOR" ;;   # literal, e.g. a dangling hash
+      esac
+      mkdir -p "agent-spec/${SLUG:-refund-review}"
+      cat > "agent-spec/${SLUG:-refund-review}/code-review.eval.md" <<MD
+    ---
+    Created: 2026-09-01 10:00
+    Last Updated: 2026-09-01 10:00
+    Reviewed-Commit: ${ANCHOR}
+    Reviewed-Commit-Previous: none
+    Review-Scope: full
+    ---
+
+    # Code Review
+
+    **Reviewed:** git diff
+    **Last checked:** 2026-09-01 at commit \`${ANCHOR}\`
+    **Scope this run:** full diff
+    **Overall:** Needs work
+
+    ## Summary
+    Prior pass reviewed everything up to ${ANCHOR}.
+
+    ## Issues Tracker
+
+    | ID | File:Line | Severity | Description | Status | Notes |
+    |----|-----------|----------|-------------|--------|-------|
+    | CR-1 | auth/login.py:4 | Important (82) | Bare \`except:\` swallows SystemExit/KeyboardInterrupt | ❌ Open | Catch \`Exception\` explicitly |
+    | CR-2 | auth/login.py:2 | Important (80) | \`login\` has no unit test | ❌ Open | Add tests/auth/test_login.py |
+    MD
+    fi
+
+    echo "BASE=$BASE HEAD=$HEAD_HASH"
+graders:
+  - name: scope-is-gap
+    type: regex
+    pattern: 'SCOPE-DECISION:\s*gap'
+    weight: 1
+  - name: scope-field-gap
+    type: regex
+    pattern: 'Review-Scope:\s*gap'
+    weight: 1
+  - name: previous-rotated
+    type: regex
+    pattern: 'Reviewed-Commit-Previous:\s*[0-9a-f]{7,40}'
+    weight: 1
+  - name: gap-scoping-behaviour
+    type: llm
+    weight: 3
+    criteria: |
+      The agent must have read Reviewed-Commit out of the existing tracker BEFORE reviewing, and scanned only the gap (git diff <Reviewed-Commit>..HEAD plus unstaged changes) for NEW issues — the transcript should show a diff command using that hash as the base. PASS requires all of: (a) the new-issue scan is gap-scoped, not the whole branch; (b) no NEW issue is raised against auth/login.py, which is unchanged since the anchor (re-checking the already-tracked CR-1/CR-2 on that file is correct and does not count as a new issue); (c) the null-safety bug in payments/refund.py, which IS in the gap, is reported. FAIL if auth/login.py's bare except is reported as a new finding.

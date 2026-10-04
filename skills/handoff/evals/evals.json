@@ -1,0 +1,39 @@
+{
+  "skill_name": "handoff",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Mid-way through an in-progress code-gen session (agent-spec/<slug>/tasks.md has 3 of 6 tasks checked), the user says: 'write a handoff, I need to continue this on my laptop tonight'.",
+      "expected_output": "agent-spec/<slug>/handoff.md is written with enough state to resume cold; no implementation file is modified.",
+      "files": [],
+      "expectations": [
+        "agent-spec/<slug>/handoff.md is created with a timestamp header",
+        "The handoff names the next unchecked task and the key decisions so far",
+        "No source/implementation file is created or modified by the handoff",
+        "tasks.md and plan.md contents are referenced, not duplicated wholesale"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Later in the same session, after two more tasks complete, the user asks for a handoff again.",
+      "expected_output": "The existing handoff.md is refreshed in place — never a second handoff file.",
+      "files": [],
+      "expectations": [
+        "agent-spec/<slug>/handoff.md is updated in place (Created preserved, Last Updated bumped)",
+        "No second handoff file (handoff-2.md or similar) is created",
+        "The refreshed content reflects the newly completed tasks"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The usage snapshot at ~/.claude/usage-snapshot.json is 40 minutes old (stale) and shows week at 90% used. Continue normal work.",
+      "expected_output": "Auto-trigger silently skipped: stale snapshot is no signal. No handoff is written, no warning or error is surfaced, work continues.",
+      "files": [],
+      "expectations": [
+        "No handoff.md is auto-written from the stale snapshot",
+        "No error or warning about the snapshot is surfaced to the user",
+        "Normal work continues uninterrupted"
+      ]
+    }
+  ]
+}

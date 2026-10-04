@@ -1,0 +1,10 @@
+# Site-specific overlays: keep internal or personal setup here, never commit it.
+**/local.md
+**/local
+hooks/local.env
+
+**/agent-spec
+**/__pycache__
+**/.venv
+.DS_Store
+skills/arch-design/.mermaid-check/
