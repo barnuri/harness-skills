@@ -5,7 +5,7 @@ description: >
   findings. Use when asked to review a PR, diff, branch, or snippet, before committing or
   opening a PR, and after implementing code. Triggers: "review my changes", "review PR #42",
   "re-run code review".
-allowed-tools: Agent, Skill, Bash(git diff *), Bash(git rev-parse *), Bash(git cat-file *), Bash(git status *), Bash(gh pr diff *), Bash(gh pr view *), Read, Write, Edit, Glob, Grep
+allowed-tools: Agent, Skill, Bash(git diff *), Bash(git rev-parse *), Bash(git cat-file *), Bash(git status *), Bash(gh pr diff *), Bash(gh pr view *), Bash(gh api *), Bash(gh pr review *), AskUserQuestion, Read, Write, Edit, Glob, Grep
 hooks:
   Stop:
     - hooks:
@@ -245,7 +245,32 @@ Always end the review output with one of these two verdict lines so the calling 
 - `🔄 REVIEW NEEDS FIXES — N open issue(s) at confidence ≥ 80 remain.` (the *fix* loop — if the
   user asked for one — continues; the review itself is finished)
 
-**PR comments (opt-in):** if the user passed `--comment` and open issues exist on a PR review, post one inline comment per unique open issue via `gh pr comment`, each with a concrete fix suggestion.
+## PR Iteration (opt-in: `--comment`, or the user asks to comment, resolve or approve)
+
+Each run on a PR is one iteration. Do these steps in order, after the tracker is updated:
+
+1. **Resolve fixed threads.** List threads with `gh api graphql` (`reviewThreads { id isResolved
+   resolvedBy { login } isOutdated path line comments { author body } }`). A thread counts as
+   resolved only when the current user (`gh api user -q .login`) resolved it or wrote in it.
+   Treat a thread someone else resolved without the current user taking part as unresolved:
+   re-check it, and if its finding is still open, reply with why and reopen it
+   (`unresolveReviewThread`). For every unresolved thread whose finding
+   is now `✅ Fixed`, or whose author reply gives a reason you accept, reply in one line with the
+   fixing commit or the reason, then resolve it with the `resolveReviewThread` mutation. Never
+   resolve a thread that is still open, or one a human reviewer opened and has not been answered.
+   Leave declined-but-wrong replies unresolved and answer them with why it still holds.
+2. **New inline comments.** Post one review (`gh api repos/<o>/<r>/pulls/<n>/reviews`,
+   `event: COMMENT`) with one inline comment per `🆕 New` finding and per still-open finding whose
+   old thread is outdated. Anchor on a RIGHT-side line inside the current diff. Never repeat a
+   finding that already has an open, non-outdated thread.
+3. **Summary comment.** Put the iteration summary in that review's `body`: commit reviewed and
+   gap, fixed / still open / new counts by CR id, threads resolved, and an ordered checklist of
+   what is left. Post it even when there are no new inline comments.
+4. **Approval gate.** If the verdict is `✅ REVIEW SATISFIED`, ask the user with the ask tool
+   whether to approve. Only on an explicit yes, run `gh pr review <n> --approve` with a one-line
+   body. Never approve without that answer, and never request changes unless asked.
+
+Record in the tracker which threads were resolved and the review URL of each iteration.
 
 If `<skill-dir>/local.md` exists, read it first (and any file it points to under
 `<skill-dir>/local/`). It holds this install's site-specific setup, and its rules override the

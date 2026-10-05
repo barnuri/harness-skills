@@ -87,7 +87,7 @@ fi
 
 [ -z "$f" ] && exit 0
 
-retry_file="$(dirname "$f")/.stop-hook-retries"
+retry_file="$(dirname "$f")/.stop-hook-retries-$label"
 n=$(cat "$retry_file" 2>/dev/null || echo 0)
 n=$((n + 1))
 echo "$n" > "$retry_file"
