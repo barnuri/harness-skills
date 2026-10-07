@@ -262,7 +262,20 @@ Each run on a PR is one iteration. Do these steps in order, after the tracker is
 2. **New inline comments.** Post one review (`gh api repos/<o>/<r>/pulls/<n>/reviews`,
    `event: COMMENT`) with one inline comment per `🆕 New` finding and per still-open finding whose
    old thread is outdated. Anchor on a RIGHT-side line inside the current diff. Never repeat a
-   finding that already has an open, non-outdated thread.
+   finding that already has an open, non-outdated thread. For a still-open finding that has an
+   open thread, reply in that thread with the fix instead.
+
+   **One-click fixes.** Make each fix easy for the author to apply:
+   - **Simple fix** (a few contiguous lines, a rename, a deletion, a one-line assertion): include
+     a GitHub ` ```suggestion ` block with the exact replacement text. This applies to new inline
+     comments and to replies in open threads.
+   - **Anchor on the exact range.** Before you post, read the current file lines. Anchor the
+     suggestion on the RIGHT-side range it replaces: `line` for one line, `start_line` + `line`
+     for several. A wrong anchor deletes real code when the author applies it.
+   - **Deletion:** an empty suggestion block deletes the anchored range.
+   - **Fix that spans several places or files:** give the suggestion for the anchored part and a
+     code snippet for the rest. Say which part is manual.
+   - **Fix that is not simple:** give a concrete code snippet, not prose.
 3. **Summary comment.** Put the iteration summary in that review's `body`: commit reviewed and
    gap, fixed / still open / new counts by CR id, threads resolved, and an ordered checklist of
    what is left. Post it even when there are no new inline comments.
