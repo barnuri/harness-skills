@@ -148,8 +148,9 @@ token from Step 5. Callers still own creating their own state files (`tasks.md`,
 `agent-spec/<slug>/` — this skill only resolves *which* folder that is, plus the harness
 token when needed.
 
-If `<skill-dir>/local.md` exists, read it first (and any file it points to under
-`<skill-dir>/local/`). It holds this install's site-specific setup, and its rules override the
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
 defaults below.
 
 > Harness note: the `user-invocable: false` frontmatter key is Claude-Code-only; opencode/pi ignore it. There, the description wording above is the only guard — no behavioral fallback needed.

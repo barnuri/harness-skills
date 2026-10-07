@@ -17,8 +17,9 @@ The folder format (the `tasks.md` `## Status` emoji, task markers, `Owner:` line
 defined once in the `session-slug` skill's **Session folder format** section. Read that section
 before classifying anything, and never invent a status it does not define.
 
-If `<skill-dir>/local.md` exists, read it first (and any file it points to under
-`<skill-dir>/local/`). Its rules override the defaults below.
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. Its rules override the defaults below.
 
 ## Pick the mode
 

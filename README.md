@@ -27,11 +27,37 @@ Subagents in `agents/`: `planner`, `implementer`, `bug-hunter`, `guideline-check
 
 ## Install
 
+### Claude Code plugin (auto-update)
+
+```text
+/plugin marketplace add barnuri/harness-skills
+/plugin install barnuri-dev-skills@harness-skills
+```
+
+Third-party marketplaces do not auto-update by default. Turn it on in `/plugin` → Marketplaces →
+`harness-skills` → Enable auto-update, or declare the marketplace in `~/.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "harness-skills": {
+      "source": { "source": "github", "repo": "barnuri/harness-skills" },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": { "barnuri-dev-skills@harness-skills": true }
+}
+```
+
+The plugin sets no `version`, so every new commit on `master` is an update. An update replaces the
+plugin folder, so keep your overlays in `~/.config/harness-skills/` (see **Local overlays**).
+
+### Other harnesses
+
 Clone the repo, then point each harness at it:
 
 | Harness | How |
 |---|---|
-| Claude Code | `/plugin marketplace add barnuri/harness-skills`, then `/plugin install barnuri-dev-skills@harness-skills` |
 | opencode, pi, GitHub Copilot CLI | Symlink each `skills/<skill>` folder into `~/.agents/skills/` (all three read it) |
 | Codex CLI, Cursor | Symlink the `skills/<skill>` folders into that harness's skills directory |
 
@@ -42,15 +68,26 @@ an installed Claude Code plugin.
 
 `code-gen` and `cr` check code against coding standards resolved in this order:
 
-1. The `dev-guidelines` skill, once configured: add `skills/dev-guidelines/local.md` and your guideline files under `skills/dev-guidelines/local/`.
-2. Guideline files named in the skill's `local.md` (see below).
+1. The `dev-guidelines` skill, once configured: add a `local.md` and your guideline files under
+   `local/`, in `~/.config/harness-skills/dev-guidelines/` or in `skills/dev-guidelines/`.
+2. Guideline files named in the calling skill's `local.md` (see below).
 3. The target repo's `CLAUDE.md` / `AGENTS.md`.
 
-With none of these, the guideline check is skipped and everything else still runs.
+With none of these, the guideline check is skipped and everything else still runs. When
+`dev-guidelines` is not configured, it offers once per session to generate a configuration from
+the current repo or a starter set, and writes it to `~/.config/harness-skills/dev-guidelines/`.
+Answer "Never ask" to stop the offer.
 
 ## Local overlays
 
-Each skill reads an optional `skills/<skill>/local.md` first, plus any files under
-`skills/<skill>/local/`. Put site-specific setup there: your issue tracker's browse URL, internal
-MCP tool names, a reporting timezone, guideline file paths. Hooks read `hooks/local.env` the same
-way (e.g. `CLAUDE_STATUSLINE_CMD` for `hooks/usage-snapshot.sh`). All overlays are gitignored.
+Each skill reads an optional `local.md` first, plus any files in the `local/` folder beside it.
+Put site-specific setup there: your issue tracker's browse URL, internal MCP tool names, a
+reporting timezone, guideline file paths. Hooks read `local.env` the same way (e.g.
+`CLAUDE_STATUSLINE_CMD` for `hooks/usage-snapshot.sh`).
+
+| Install | Skill overlay | Hook overlay |
+|---|---|---|
+| Plugin (survives updates) | `~/.config/harness-skills/<skill>/local.md` | `~/.config/harness-skills/hooks/local.env` |
+| Clone | `skills/<skill>/local.md` | `hooks/local.env` |
+
+When both exist, the clone location wins. In-repo overlays are gitignored.

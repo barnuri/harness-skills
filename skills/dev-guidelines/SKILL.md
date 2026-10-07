@@ -2,9 +2,10 @@
 name: dev-guidelines
 description: >
   (BN) Load this install's coding standards from the skill's local configuration. Works only when
-  configured: without a local.md it reports "not configured" and loads nothing. Invoked by
-  code-gen and cr; also use directly when asked about the coding standards.
-allowed-tools: Read, Glob
+  configured: without a local.md it reports "not configured", loads nothing, and offers once to
+  generate a configuration. Invoked by code-gen and cr. Also use it directly when asked about the
+  coding standards.
+allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
 ---
 
 # Developer Guidelines
@@ -17,15 +18,24 @@ in this conversation, repeat that line and stop. Do not read any files.
 
 ## Step 1 — Find the local configuration
 
-Read `<skill-dir>/local.md`. It lists the guideline files (usually under `<skill-dir>/local/`)
-and which file types each one applies to.
+Read the first `local.md` that exists:
 
-If `local.md` does not exist, output exactly:
+1. `<skill-dir>/local.md` (a cloned or symlinked install).
+2. `~/.config/harness-skills/dev-guidelines/local.md` (a marketplace plugin install, whose
+   `<skill-dir>` is replaced on every update).
+
+`local.md` lists the guideline files and the file types each one applies to. Its paths are
+relative to the folder that holds that `local.md`.
+
+If `local.md` contains the line `disabled: true`, output exactly `dev-guidelines: not configured`
+and stop. Do not offer to generate a configuration.
+
+If neither file exists, output exactly:
 
 > dev-guidelines: not configured
 
-Then stop. Callers (`code-gen`, `cr`) treat this as "no skill installed" and continue down their
-fallback chain.
+Then go to **Offer to generate a configuration** below. Callers (`code-gen`, `cr`) treat
+"not configured" as "no skill installed" and continue down their fallback chain.
 
 ## Step 2 — Load the guideline files
 
@@ -41,10 +51,41 @@ Output exactly:
 
 Then apply every loaded rule to all code you generate or review.
 
+## Offer to generate a configuration
+
+Offer this at most once per session. Skip the offer when this session is a subagent, an
+autonomous run, or has no interactive ask tool.
+
+Ask the user through the ask tool, with these options:
+
+| Option | Action |
+|---|---|
+| Generate from this repo | Read the repo's lint and formatter configs, `CLAUDE.md`/`AGENTS.md`, and a sample of source files. Draft the guideline files from the conventions the code already follows |
+| Write a starter set | Write a short, generic `coding-principles.md` plus one file per language found in the repo |
+| Not now | Continue unconfigured. Ask again in a later session |
+| Never ask | Write `local.md` with the single line `disabled: true` |
+
+Write every generated file to `~/.config/harness-skills/dev-guidelines/`. Never write inside
+`<skill-dir>`: a plugin update deletes it, and a cloned install may be a synced checkout. Show the
+user the drafted files and get their approval before writing them. After writing, run Step 1 again.
+
+A generated configuration contains:
+
+- `local.md`: the routing list (see the example below). One "always load" file, then one line
+  per file type with the file it adds.
+- `local/coding-principles.md`: rules for every language. Naming, function size, error handling,
+  comments, test expectations, and scope discipline (change only what the task needs).
+- `local/<language>-guidelines.md`: one file per language in the repo. The formatter and linter
+  with their configs, typing rules, the module layout, and the test framework and test layout.
+
+Keep each rule to one checkable sentence. A reviewer must be able to answer "followed or not"
+for every rule.
+
 ## Configuring it
 
-Create `<skill-dir>/local.md` and put your guideline files in `<skill-dir>/local/`. Both are
-gitignored, so they never reach the public repo. Example `local.md`:
+Create `local.md` and put your guideline files in the `local/` folder beside it, in
+`<skill-dir>/` or in `~/.config/harness-skills/dev-guidelines/`. Overlays are gitignored, so they
+never reach the public repo. Example `local.md`:
 
 ```markdown
 # Coding standards
@@ -54,5 +95,5 @@ gitignored, so they never reach the public repo. Example `local.md`:
 - `.ts` / `.tsx` files: also load `local/typescript-guidelines.md`
 ```
 
-The paths are relative to this skill's directory. `local/` may be a symlink to a folder kept in
-another (private) repo.
+The paths are relative to the folder that holds `local.md`. `local/` may be a symlink to a
+folder kept in another (private) repo.

@@ -154,6 +154,15 @@ run_hook "$w" "$VALID_STATUS_JSON" >/dev/null 2>&1
 leftovers=$(find "$w/home/.claude" -name 'usage-snapshot.json.tmp*' 2>/dev/null | wc -l | tr -d ' ')
 assert_eq "case7: no temp files left behind" "0" "$leftovers"
 
+# --- Case 8: with no hooks/local.env beside the script, ~/.config/harness-skills/hooks/local.env is sourced.
+w=$(new_workdir)
+cp "$HOOK" "$w/usage-snapshot.sh"
+mkdir -p "$w/home/.config/harness-skills/hooks"
+printf 'CLAUDE_STATUSLINE_CMD="bash %s/stub-statusline.sh"\n' "$w" > "$w/home/.config/harness-skills/hooks/local.env"
+out=$(printf '%s' "$VALID_STATUS_JSON" | env -u CLAUDE_STATUSLINE_CMD HOME="$w/home" \
+  CLAUDE_USAGE_SNAPSHOT="$w/home/.claude/usage-snapshot.json" bash "$w/usage-snapshot.sh" 2>/dev/null)
+assert_eq "case8: config-dir local.env sets the downstream command" "$DOWNSTREAM_MARKER$VALID_STATUS_JSON" "$out"
+
 echo
 echo "$pass_count passed, $failures failed"
 [ "$failures" -eq 0 ] || exit 1

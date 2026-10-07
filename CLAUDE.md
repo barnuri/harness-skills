@@ -19,6 +19,23 @@ Site-specific setup goes in a **local overlay**, which is gitignored:
 - `dev-guidelines` is a placeholder that works only through its overlay: `local.md` routes file
   types to guideline files under `local/`.
 
+A marketplace plugin install replaces the skill folders on every update, so its overlays live
+outside the plugin, in `~/.config/harness-skills/`: `<skill>/local.md`, `<skill>/local/`, and
+`hooks/local.env`. The in-repo overlay wins when both exist. When you change how a skill reads
+its overlay, keep both locations and that order.
+
+## Missing dev-guidelines configuration
+
+When `dev-guidelines` reports `dev-guidelines: not configured`, ask the user once per session,
+through the ask tool, whether to generate a configuration. The options and the content of each
+generated file are in `skills/dev-guidelines/SKILL.md` ("Offer to generate a configuration").
+
+- Write generated files only to `~/.config/harness-skills/dev-guidelines/`.
+- Never write `local.md` or `local/` inside a skill folder of this repo or of a plugin install.
+  An in-repo overlay may be a symlink into another checkout, and a plugin update deletes the
+  plugin folder.
+- Never commit an overlay.
+
 ## Cross-harness rules
 
 | Harness-specific feature | Elsewhere | What to do |

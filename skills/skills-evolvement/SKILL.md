@@ -307,8 +307,9 @@ Before stopping, physically re-read `agent-spec/<slug>/tasks.md` and run:
 grep -E '^\s*- \[ \]|^\s*- 🔄' agent-spec/<slug>/tasks.md
 ```
 
-If `<skill-dir>/local.md` exists, read it first (and any file it points to under
-`<skill-dir>/local/`). It holds this install's site-specific setup, and its rules override the
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
 defaults below.
 
 Any output means you are not done. Every task must be `[x] ✓` before declaring

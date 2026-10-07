@@ -19,7 +19,8 @@
 #
 # Env:
 #   CLAUDE_STATUSLINE_CMD    downstream status line command (none: snapshot only, no output).
-#                            May be set in an optional, untracked hooks/local.env next to this script.
+#                            May be set in an optional, untracked hooks/local.env next to this script,
+#                            else ~/.config/harness-skills/hooks/local.env (survives plugin updates).
 #   CLAUDE_USAGE_SNAPSHOT    snapshot destination (default ~/.claude/usage-snapshot.json).
 #
 # HARD RULE — never break the status line. It re-runs every couple of seconds and
@@ -30,6 +31,7 @@
 set -u
 
 local_env="$(dirname "${BASH_SOURCE[0]}")/local.env"
+[ -f "$local_env" ] || local_env="$HOME/.config/harness-skills/hooks/local.env"
 # shellcheck source=/dev/null
 [ -f "$local_env" ] && . "$local_env" 2>/dev/null
 statusline_cmd="${CLAUDE_STATUSLINE_CMD:-}"

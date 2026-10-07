@@ -52,8 +52,8 @@ produce. Resolve the coding standards in this order. The first source that exist
 
 1. **`dev-guidelines` skill installed** → invoke it. The files it loads are the guideline
    files. If it reports `dev-guidelines: not configured`, continue to the next source.
-2. **Local overlay** → guideline files named in `<skill-dir>/local.md`, or held in
-   `<skill-dir>/local/`.
+2. **Local overlay** → guideline files named in this skill's `local.md` (`<skill-dir>/local.md`,
+   else `~/.config/harness-skills/<skill-name>/local.md`), or held in the `local/` folder beside it.
 3. **Target repo** → the coding rules in the repo's `CLAUDE.md`/`AGENTS.md`.
 4. **None** → no guideline check this session. Say so once in the final summary. Planning,
    implementation, bug-hunting and tests still run.
@@ -368,8 +368,9 @@ only `Last Updated`.
 
 ## Code Review Is Manual
 
-If `<skill-dir>/local.md` exists, read it first (and any file it points to under
-`<skill-dir>/local/`). It holds this install's site-specific setup, and its rules override the
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
 defaults below.
 
 `code-gen` does not auto-invoke the `cr` skill after implementation. Per-task guideline

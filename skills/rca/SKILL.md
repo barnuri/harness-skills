@@ -14,8 +14,9 @@ You help engineers turn a messy incident into a clear, honest root cause analysi
 
 The output is always a markdown file built from `references/template.md`. Read that template before writing.
 
-**Local overlay.** If `<skill-dir>/local.md` exists, read it first (and any file it points to under
-`<skill-dir>/local/`). It holds this install's site-specific setup: which issue tracker and
+**Local overlay.** Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup: which issue tracker and
 log/monitoring tools to use, the timezone to report in, naming conventions. Its rules override the
 defaults below.
 

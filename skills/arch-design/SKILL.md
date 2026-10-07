@@ -388,8 +388,9 @@ vocabulary — the word chosen because it sounds more senior than the plain one.
   decisions. Use them once a section has three or more items. Never renumber an `R<n>` after
   review — append instead, because downstream tasks and tests cite them.
 
-If `<skill-dir>/local.md` exists, read it first (and any file it points to under
-`<skill-dir>/local/`). It holds this install's site-specific setup, and its rules override the
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
 defaults below.
 
 **Before rendering, reread twice — once to cut, once for vocabulary.** Every paragraph that does not
