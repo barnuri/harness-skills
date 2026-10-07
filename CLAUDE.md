@@ -57,6 +57,11 @@ generated file are in `skills/dev-guidelines/SKILL.md` ("Offer to generate a con
 - Never set `model:` or `effort:` in frontmatter. Skills and agents inherit the session model.
 - Keep `allowed-tools` (skills) and `tools:` (agents) complete. Agents also carry `memory: user`.
 - Register every skill folder in `.claude-plugin/marketplace.json` in the same change.
+- Keep the plugin name and description in `.cursor-plugin/marketplace.json` and
+  `.cursor-plugin/plugin.json` equal to `.claude-plugin/marketplace.json`. Cursor finds the
+  skills in `skills/` by convention, so it needs no skill list.
+- `scripts/update-harness-skills.sh` holds each harness's update command. Change it when a
+  harness changes its plugin CLI, and keep the README **Updates** table equal to it.
 - Agents live in `agents/` and workflows in `workflows/` at the repo root, never inside a skill.
 - Skills that keep per-session state use `session-slug` and its session-folder format.
 

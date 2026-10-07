@@ -1,0 +1,7 @@
+{
+  "name": "barnuri-dev-skills",
+  "description": "Code generation with persistent task tracking, parallel-agent code review, architecture design docs and verification, RCA reports, session handoffs, and agent-spec housekeeping",
+  "author": { "name": "barnuri" },
+  "repository": "https://github.com/barnuri/harness-skills",
+  "license": "MIT"
+}

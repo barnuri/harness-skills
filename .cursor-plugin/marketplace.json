@@ -1,0 +1,14 @@
+{
+  "name": "harness-skills",
+  "owner": { "name": "barnuri" },
+  "metadata": {
+    "description": "Agent-harness skills for code generation, code review, design docs, RCAs, handoffs, and session housekeeping"
+  },
+  "plugins": [
+    {
+      "name": "barnuri-dev-skills",
+      "source": "./",
+      "description": "Code generation with persistent task tracking, parallel-agent code review, architecture design docs and verification, RCA reports, session handoffs, and agent-spec housekeeping"
+    }
+  ]
+}
