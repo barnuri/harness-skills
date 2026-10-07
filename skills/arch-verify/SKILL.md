@@ -161,6 +161,11 @@ ready to call "design-complete".]
 [Prioritized list of actions to reach full alignment, if any gaps remain. Empty if fully aligned.]
 ```
 
+In `Notes`, cite the `file:line` that proves each status. If a status rests on inference rather
+than code you read (for example, a requirement you assume a library covers), write "likely" and
+name what would prove it. Never mark `✅ Covered` from inference alone. Use `⚠️ Partial` until
+the code proves it.
+
 Update the file incrementally as you work through each section — write it progressively rather
 than waiting until the full analysis is complete. This way, if the session is interrupted, the
 state is not lost.

@@ -239,7 +239,10 @@ fix stays testable (correction-harvesting).
 
 Work through the task list. For each task:
 1. Mark it `🔄` in `tasks.md` before starting — or `⏸` if it's blocked on an open question (see Phase 2); skip blocked tasks until answered.
-2. Apply the change (direct edit or via `code-gen` skill for larger changes).
+2. Apply the change (direct edit or via `code-gen` skill for larger changes). Skill text is
+   instructions another agent executes. Write it with one instruction per sentence, one name
+   per concept, and every hedge kept. If the loaded coding standards name a prose linter, run
+   it on the changed lines.
 3. Mark it `[x] ✓` immediately after.
 
 Changes that touch more than 3 files or require structural redesign: invoke the

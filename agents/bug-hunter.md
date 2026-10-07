@@ -140,6 +140,10 @@ Impact: AttributeError at runtime when user record is missing
 Fix: Add `if user is None: return` before accessing `user.address`
 ```
 
+Write `Issue:` and `Impact:` as plain claims: one claim per sentence, the actor named. Match
+the wording to the confidence score. State a traced failure flat. An inferred one says
+"can" or "likely", never "will".
+
 End the report with **exactly one** verdict line — never free prose in its place:
 - `VERDICT: APPROVED` — nothing found worth reporting
 - `VERDICT: CORRECTION_NEEDED` — one or more issues reported above (each carries its fix)

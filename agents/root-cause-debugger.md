@@ -64,3 +64,6 @@ parent-owned — never write or mark anything in them.
 - **Suggested fix**: what to change and where — concrete enough for the caller to apply without
   re-investigating, flagged clearly as *suggested* (you did not apply it).
 - **Confidence**: high/medium/low, with what would raise it if not high.
+
+Word the root cause to match that confidence. "X causes the failure" is for a cause you
+reproduced. Below high, write "X likely causes the failure" and name the missing evidence.

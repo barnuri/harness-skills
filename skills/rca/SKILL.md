@@ -74,3 +74,5 @@ Fill every section of the template with **real content**. Concrete beats vague e
 - Use `code` formatting for service names, ticket keys, error types, config keys, and metrics.
 - Be direct and factual. An RCA is blameless: describe what systems and processes did, not who to blame. Avoid filler like "it's important to note that".
 - Don't pad. If a section genuinely doesn't apply, say why in one line rather than inventing content.
+- Keep certainty exact. State a cause the evidence proves flat. A suspected cause stays "likely" or "possible", with the evidence named. Never upgrade a hedge from the source data, and never add a cause or a frequency nobody observed.
+- One claim per sentence, active voice, the system or process named as the actor. No semicolons.

@@ -155,6 +155,12 @@ of sync with it and mislead the next session.
 The one thing worth quoting verbatim from another artifact: the first unchecked task in
 `tasks.md` — it's the resume entry point.
 
+### Write for an agent that cannot ask
+
+The reader is a fresh session with no way to ask what you meant. One instruction or fact per
+sentence. Use one name for each file, task, and concept throughout. Keep every hedge: "the test
+may be flaky" must not become "the test is flaky". Mark guesses as guesses.
+
 ### Redact
 
 Never write secrets, API keys, tokens, credentials, connection strings, customer telemetry, or

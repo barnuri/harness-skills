@@ -42,3 +42,14 @@ Fix: Replace with `except Exception as e:` or catch the specific type.
 - Acknowledge good decisions when present — a review is a conversation, not an audit.
 - Ask a question if something is genuinely ambiguous — don't assume the worst.
 - Never nitpick what is not in the developer guidelines.
+
+## Wording
+
+A developer and a fixing agent both act on each finding. Write it so neither has to guess.
+
+- Match the words to the confidence score. State a failure you traced flat: "crashes when `user`
+  is `None`". Below 90, write "can" or "likely", never "will".
+- One claim per sentence. Name the code that acts: "`save()` drops the error", not "the error is
+  dropped". No semicolons.
+- Use one name for each function, file, and concept across the whole review. Two findings about
+  one object must not use two names for it.

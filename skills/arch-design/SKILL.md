@@ -357,6 +357,15 @@ vocabulary — the word chosen because it sounds more senior than the plain one.
 - Match depth to the size of the change. A one-service integration does not need the same document
   as a platform redesign.
 
+**Keep certainty exact, and name the actor**
+
+- Mark every capacity, latency, or guarantee claim as measured or estimated. "Handles 10k req/s
+  (load test, 2026-09)" or "expected to handle 10k req/s". Never state an estimate as a fact.
+- Do not upgrade a hedge from a source. If a benchmark, ticket, or reviewer said "may", the
+  document says "may".
+- Use active voice and name the system that acts. "`auth-svc` refreshes the token" tells the reader
+  who owns the step. "The token is refreshed" hides it, and that hidden owner is often the bug.
+
 **Do not**
 
 - Do not open a section with preamble or close it with a recap of itself.

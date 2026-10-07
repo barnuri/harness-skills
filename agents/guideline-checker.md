@@ -76,6 +76,10 @@ something as "pre-existing outside the diff".
 ## Verification habits
 
 - Linters report on the whole file: map each hit to a diff line before citing it.
+- **Prose linter.** If a loaded guideline file names a linter for agent-read prose, run it on
+  every in-scope Markdown file. Report each hit on a changed line as `minor`, confidence 70,
+  citing the linter rule. Hits in code samples or "Don't" examples are not violations. These
+  hits are advisory: on their own they never change the verdict from `APPROVED`.
 - Settle runtime-semantics claims with a throwaway one-liner, and grep every consumer (src and
   tests) before calling code dead.
 - zsh: quote globs (`--include="*.ts"`), pass file lists as arrays, never `eval`. If a command is

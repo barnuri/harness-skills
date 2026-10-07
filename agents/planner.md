@@ -80,6 +80,10 @@ Write it so a **fresh session with no memory of your exploration can act on it c
   cite `path/to/file.py:42` and say what is true there.
 - Say why, not just what — the constraint that forced a design, the alternative rejected and the
   reason. That is the part the code cannot tell the next reader on its own.
+- Write each task line as one instruction an implementer executes: one action, the files named,
+  one name per concept across the plan. No semicolons.
+- Keep certainty exact. Mark what you read in code as fact and what you inferred as "likely", so
+  the implementer knows which claims to check first.
 
 ## What to return to the parent
 

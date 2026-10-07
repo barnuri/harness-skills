@@ -103,6 +103,10 @@ Write pointers in imperative, harness-neutral phrasing (works for any agent read
 file, not just Claude Code — see this repo's own Cross-Harness Portability rules if
 `CLAUDE.md`/`AGENTS.md` in this repo are in scope).
 
+Moving text must not change what it says. Keep every condition, number, and hedge from the
+original section, in the pointer and in the extracted file. Do not reword a "may" into a
+"must" while shortening.
+
 ## Step 6 — Report before writing
 
 Produce a before/after size table (lines or words per file, estimated reduction) plus the
