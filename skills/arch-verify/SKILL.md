@@ -4,13 +4,13 @@ description: >
   (BN) Verify implemented code against an architecture design document, with incremental re-runs
   and regression detection. Use after implementation when a design doc exists. Triggers: "verify
   against the design", "arch verify", "did I implement everything?", "re-check the design".
-allowed-tools: Skill, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git symbolic-ref *), Bash(git branch *), Bash(gh repo view *), Bash(sed *)
+allowed-tools: Skill, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git symbolic-ref *), Bash(git branch *), Bash(gh repo view *), Bash(gh pr view *), Bash(gh api *), Bash(sed *), AskUserQuestion
 disable-model-invocation: true
 hooks:
   Stop:
     - hooks:
         - type: command
-          command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/stop-completion-gate.sh" arch-design-diff.%HARNESS%.md "❌ Missing|⚠️ Partial|🔄 Deviated" arch-verify'
+          command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/stop-completion-gate.sh" arch-design-diff.%HARNESS%.md "(❌ Missing|⚠️ Partial|🔄 Deviated)( ⚡ REGRESSION)? \|" arch-verify'
 ---
 
 # Architecture Verification
@@ -101,8 +101,17 @@ For each requirement, check the code diff and assign one of these statuses:
 | `⏭️ Deferred` | Explicitly out of scope for this implementation (e.g., noted in tasks.md or plan.md) |
 
 **Re-run regression detection:** If an item was `✅ Covered` in the previous run but is now
-`⚠️ Partial`, `❌ Missing`, or `🔄 Deviated`, mark it with `⚡ REGRESSION` in addition to
-its new status.
+`⚠️ Partial`, `❌ Missing`, or `🔄 Deviated`, write `⚡ REGRESSION` after its new status in the
+same cell (`⚠️ Partial ⚡ REGRESSION`).
+
+**`📤 Reported`** — the end state of an open item (`❌ Missing`, `⚠️ Partial`, `🔄 Deviated`)
+once this run delivers it: Step 7 names it by ID, or Step 8 posts it on the PR. Before finishing a
+run, append ` · 📤 Reported` to the status cell of every open item you delivered
+(`⚠️ Partial · 📤 Reported`, `🔄 Deviated ⚡ REGRESSION · 📤 Reported`). The Stop hook gates only
+on a status cell that ends without it, so a finished verification can stop with items still open
+for someone else to fix, such as the PR author. `📤 Reported` never changes the alignment status
+or the verdict. Re-runs re-check every item and write bare statuses, then mark again what this
+run delivered.
 
 **Scope guidance:**
 - Don't flag items that are clearly infrastructure/deployment concerns and not expressible in code.
@@ -159,6 +168,11 @@ ready to call "design-complete".]
 
 ## Next Steps
 [Prioritized list of actions to reach full alignment, if any gaps remain. Empty if fully aligned.]
+
+---
+
+## Published
+[One line per run that ran Step 8: date, publish choice, review URL. Omit when there is no PR.]
 ```
 
 In `Notes`, cite the `file:line` that proves each status. If a status rests on inference rather
@@ -189,12 +203,40 @@ After writing `agent-spec/<slug>/arch-design-diff.md`, output a concise summary 
 | ⏭️ Deferred | N |
 | ⚡ Regressions | N |
 
-[Any regressions or critical missing items, named specifically]
+[Every open item (❌ Missing, ⚠️ Partial, 🔄 Deviated) by ID, one line each, regressions first]
 
 Full details saved to `agent-spec/<slug>/arch-design-diff.md`.
 ```
 
 If everything is covered: say so clearly — "Implementation fully addresses the design. No action needed."
+
+## Step 8: Publish to the PR
+
+Run this step only when the verified code is an open PR: the user named one, or
+`gh pr view --json number,author,state` finds one for the current branch with `state` `OPEN`.
+Compare `gh api user -q .login` with `gh pr view <n> --json author -q .author.login`:
+
+- **Current user is the PR author:** do not ask and do not publish. The Step 7 output is the
+  delivery. Record `publish: none (author)` under `## Published`. An explicit `--comment` still
+  publishes **Both**.
+- **Current user is not the PR author:** as the last step of the run, ask with the ask tool which
+  to publish: **Both** (recommended), **Inline comments**, **Summary comment**, or **None**.
+  `--comment` in the arguments answers with **Both**.
+- **The ask tool is unavailable, or the user declines:** publish nothing and say so.
+
+Publish as one review (`gh api repos/<o>/<r>/pulls/<n>/reviews`, `event: COMMENT`):
+
+- **Inline comments:** one comment per open item whose Notes cite a `file:line` on a RIGHT-side
+  line inside the current PR diff. Read the file lines before posting, and anchor on the exact
+  line. State the requirement ID, the status, what the design says, what the code does, and the
+  concrete change. Items with no line in the diff (most `❌ Missing` items) go in the summary.
+- **Summary comment:** the review `body`: design doc path, commit checked, verdict, the status
+  counts table, regressions, every open item that has no inline comment, and the Next Steps list.
+  With **Summary comment** alone, post the body with no inline comments.
+
+When `cr` also runs on this PR in this session, the skill that runs last asks once for both and
+posts one combined review. The skill that runs first records its items and posts nothing. Record
+the publish choice and the review URL in `arch-design-diff.md` under `## Published`.
 
 ## Re-run Behavior
 

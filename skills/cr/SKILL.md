@@ -42,7 +42,10 @@ Before launching agents, verify there is something to review:
 
 **Commit anchoring (this is what makes re-runs incremental).** Record the current commit with
 `git rev-parse --short HEAD` and write it to the tracker file's `Reviewed-Commit` frontmatter
-field. On every subsequent run, read `Reviewed-Commit` back out of the existing tracker file
+field. When reviewing a PR, the current commit is the PR head, not local `HEAD`: on every run,
+`git fetch origin pull/<n>/head`, take `gh pr view <n> --json headRefOid`, and read `HEAD`
+below as that commit. This keeps re-runs correct when the PR branch is not checked out here
+or has new pushes. On every subsequent run, read `Reviewed-Commit` back out of the existing tracker file
 *before* launching agents and use it as the base for the gap:
 
 - `git diff <Reviewed-Commit>..HEAD` (plus unstaged changes) is the **gap diff** — the only
@@ -126,6 +129,13 @@ Fix: Add tests covering [success path / edge case / error path] in tests/path/to
 
 ## Re-run Support
 
+Re-running `cr` on the same PR or branch, in a new conversation or another worktree, is a
+re-run. `session-slug` Step 3 finds the prior tracker (and copies it in from another worktree),
+and the run continues from its `Reviewed-Commit` and issue IDs as a gap review. Every re-run
+re-fetches the PR head, comments, and review threads, so it sees new pushes and replies. If the copied tracker was written by a
+different harness or model, copy it to this run's own `code-review.<harness>-<model>.md`
+filename and continue from that file.
+
 When `agent-spec/<slug>/code-review.md` already exists:
 - Load previous issues and their statuses, and read `Reviewed-Commit` from the frontmatter to
   establish the gap base (see **Commit anchoring** above).
@@ -163,6 +173,8 @@ Last Updated: YYYY-MM-DD HH:MM
 Reviewed-Commit: <short-hash>
 Reviewed-Commit-Previous: <short-hash or "none">
 Review-Scope: full | gap   # "full" only on first run, unresolvable base, or explicit user request
+Branch: <branch-name>
+PR: #<n>   # omit when not reviewing a PR
 ---
 
 # Code Review
@@ -192,7 +204,7 @@ review or a gap review. These three fields are mandatory; a tracker file without
 `Reviewed-Commit` forces the next run into a full re-review.
 
 **`📤 Reported`** — the end state of an unfixed finding once this run has delivered it (in the
-review output, or as a PR comment with `--comment`). Before finishing a run, flip every `❌ Open`
+review output, or on the PR per **PR Iteration**). Before finishing a run, flip every `❌ Open`
 and `🆕 New` row you have reported to `📤 Reported`. `❌ Open` therefore means "found but not yet
 delivered" — that is what the Stop hook gates on — and a finished review can stop with findings
 still unfixed. Re-runs treat `📤 Reported` exactly like `❌ Open`: re-check it, and flip it to
@@ -245,9 +257,30 @@ Always end the review output with one of these two verdict lines so the calling 
 - `🔄 REVIEW NEEDS FIXES — N open issue(s) at confidence ≥ 80 remain.` (the *fix* loop — if the
   user asked for one — continues; the review itself is finished)
 
-## PR Iteration (opt-in: `--comment`, or the user asks to comment, resolve or approve)
+## PR Iteration (end of every PR review)
 
-Each run on a PR is one iteration. Do these steps in order, after the tracker is updated:
+Each run on a PR is one iteration. After you update the tracker and print the review output,
+decide what to publish. Compare `gh api user -q .login` with
+`gh pr view <n> --json author -q .author.login`:
+
+- **Current user is the PR author:** do not ask and do not publish. The review output is the
+  delivery. Skip steps 1–4 and record `publish: none (author)` in the tracker. An explicit
+  `--comment` still publishes **Both**.
+- **Current user is not the PR author:** as the last step of the review, ask with the ask tool
+  which to publish: **Both** (recommended), **Inline comments**, **Summary comment**, or
+  **None**. When the verdict is `✅ REVIEW SATISFIED`, ask in the same call whether to approve
+  (step 4). `--comment` in the arguments answers the publish question with **Both**. The
+  approval question still runs.
+- **The ask tool is unavailable, or the user declines:** publish nothing and say so.
+
+When `arch-verify` also runs on this PR in this session, the skill that runs last asks once for
+both and posts one combined review. The skill that runs first records its items and posts
+nothing.
+
+Then run the steps the answer selects. **Inline comments** runs steps 1–2, **Summary comment**
+runs step 3, **Both** runs steps 1–3, **None** runs none. Step 4 follows the approval answer
+whatever the publish choice. When the user selects both, post the inline comments and the
+summary as one review.
 
 1. **Resolve fixed threads.** List threads with `gh api graphql` (`reviewThreads { id isResolved
    resolvedBy { login } isOutdated path line comments { author body } }`). A thread counts as
@@ -276,14 +309,17 @@ Each run on a PR is one iteration. Do these steps in order, after the tracker is
    - **Fix that spans several places or files:** give the suggestion for the anchored part and a
      code snippet for the rest. Say which part is manual.
    - **Fix that is not simple:** give a concrete code snippet, not prose.
-3. **Summary comment.** Put the iteration summary in that review's `body`: commit reviewed and
+3. **Summary comment.** Put the iteration summary in the review's `body`: commit reviewed and
    gap, fixed / still open / new counts by CR id, threads resolved, and an ordered checklist of
-   what is left. Post it even when there are no new inline comments.
-4. **Approval gate.** If the verdict is `✅ REVIEW SATISFIED`, ask the user with the ask tool
-   whether to approve. Only on an explicit yes, run `gh pr review <n> --approve` with a one-line
-   body. Never approve without that answer, and never request changes unless asked.
+   what is left. Post it even when there are no new inline comments. With **Summary comment**
+   alone, post a review with this body and no inline comments, and leave out the threads line,
+   because step 1 did not run.
+4. **Approval gate.** Only when the verdict is `✅ REVIEW SATISFIED` and the user answered yes to
+   the approval question, run `gh pr review <n> --approve` with a one-line body. Never approve
+   without that answer, and never request changes unless asked.
 
-Record in the tracker which threads were resolved and the review URL of each iteration.
+Record in the tracker the publish choice, which threads were resolved, and the review URL of each
+iteration.
 
 Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
 `~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives

@@ -30,7 +30,7 @@ After the Session Bootstrap, **immediately create skeleton versions of all expec
 
 ### Session Continuation rules
 
-Apply only when `session-slug` (its Step 3) resolved to an existing folder (in-context slug or explicit user resume). Check `agent-spec/<slug>/tasks.md`:
+Apply only when `session-slug` (its Step 3) resolved to an existing folder (in-context slug, explicit user resume, or a re-run on the same PR or branch). On a re-run, re-read the current code before trusting `tasks.md`: check `git log` since the session's last update and `git diff` on each task's files, so tasks finished or changed outside the session are marked accordingly. When the branch has a PR, also fetch new review comments (`gh pr view <n> --json comments,reviews`) and add each unaddressed one as a task. Check `agent-spec/<slug>/tasks.md`:
 - **Status `🔄 In progress`**: **The very first action — before any analysis, exploration, or implementation — is to open `agent-spec/<slug>/tasks.md` and append the new request as a new phase or tasks.** Write the file immediately. Then update `agent-spec/<slug>/plan.md` if the addition meets Medium/Large criteria, and resume from the first unchecked task. A task already marked `🔄` may have landed before the session was cut off: check `git status --porcelain` (untracked files included) and `git diff` on its files first, and if the change is there, verify and finish it instead of re-implementing it (or re-dispatching it to an implementer). Also create native tasks for the appended items (see Native Task Integration).
 - **Status `✅ Done`**: treat as a fresh session — overwrite both files and proceed below.
 
@@ -362,8 +362,8 @@ completed on `[x] ✓`.
 
 Every file created or updated inside `agent-spec/<slug>/` starts (before any other content) with
 a `---`-fenced header holding `Created: YYYY-MM-DD HH:MM` and `Last Updated: YYYY-MM-DD HH:MM`
-(24-hour local time). `tasks.md`'s header also carries `Owner: code-gen` (see the session folder
-format in `session-slug`). On create, set both to now; on update, preserve `Created` exactly and bump
+(24-hour local time). `tasks.md`'s header also carries `Owner: code-gen`, `Branch: <name>`, and
+`PR: #<n>` once a PR exists (see the session folder format in `session-slug`). On create, set both to now; on update, preserve `Created` exactly and bump
 only `Last Updated`.
 
 ## Code Review Is Manual

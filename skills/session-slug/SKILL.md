@@ -41,7 +41,7 @@ Idempotent — do this at most once per session, never duplicate an existing ent
 
 Multiple terminal sessions may run concurrently in the same repo, so `agent-spec/` may
 contain folders that belong to **other** sessions. Never scan `agent-spec/` to find work
-to resume — resume is context-bound:
+to resume, except for the same PR or branch (below) — resume is context-bound:
 
 - **Slug already in this conversation's context** (this session created it earlier, or a
   caller skill passed it explicitly): reuse that folder as-is. Do not re-derive or rename it.
@@ -49,6 +49,22 @@ to resume — resume is context-bound:
   "continue where we left off", or named a slug): scan `agent-spec/*/tasks.md` (or the
   caller's equivalent state file) for `🔄 In progress` folders, list them, and let the
   user pick (use the named one directly if it exists).
+- **Same PR or branch already worked on (a re-run)**: before creating a fresh folder for a
+  request tied to a PR or branch, look for an earlier session on the same target. Re-running
+  a skill on the same PR or branch continues that session, it never starts from scratch.
+  A folder matches when a state file's header names the same `PR: #<n>`, or the same
+  `Branch: <name>` with no PR, or a `code-review.*.md` whose `**Reviewed:**` line names the
+  same PR number.
+  1. Scan this worktree's `agent-spec/*/`. On a match, reuse that folder as-is.
+  2. No match here: run `git worktree list`. When it lists more than one worktree, scan each
+     other worktree's `agent-spec/*/` the same way, and also count a folder whose worktree
+     has the same branch checked out. On a match, copy that folder into this worktree's
+     `agent-spec/` under the same slug (copy, never move or edit the original, another
+     session may still own it), and say which worktree it came from. Commit hashes in it
+     resolve here, because worktrees share one object store.
+  3. Several matches: take the one with the newest `Last Updated`.
+  The caller then continues from that state and re-checks the current code and PR against
+  it (see the caller's re-run rules).
 - **Anything else — a new request**: create a fresh `agent-spec/<slug>/`. If a folder
   with that slug already exists but was not created in this conversation, do **not**
   adopt it — append a numeric suffix (`<slug>-2`, `<slug>-3`, …) until the name is free.
@@ -134,6 +150,9 @@ resume, or clean sessions (the `agent-spec` skill) work without knowing which sk
 - **`plan.md`** (optional) carries a `> Status:` line that mirrors the `tasks.md` status.
 - **Owner.** `tasks.md` names the skill that created the session on an `Owner: <skill-name>`
   line in its header. A resume goes back through that skill.
+- **Target.** Every state file's header carries `Branch: <name>` (the branch the work is on)
+  and, when a PR exists, `PR: #<n>`. Step 3 matches re-runs on these lines. Add `PR:` as soon
+  as a PR is opened for the branch.
 - **Other state files** (e.g. `arch-design-diff.<harness>-<model>.md`) live beside `tasks.md` and
   keep their own vocabulary. A folder with no `tasks.md` is an orphan: report it, never classify
   or delete it automatically.
