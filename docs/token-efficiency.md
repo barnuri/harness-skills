@@ -2,8 +2,46 @@
 
 Measured on Claude Code over about 12,000 turns from long interactive sessions. Numbers come
 from one machine, so treat them as ranges and re-measure on yours. Levers run from highest to
-lowest impact. The official Claude Code docs (`env-vars`, `mcp`, `settings-reference`, `output-styles` pages)
-confirm every env var and setting name here.
+lowest impact. The official Claude Code docs (`env-vars`, `mcp`, `settings-reference`, `output-styles`
+pages) confirm the env var and setting names here, except `CLAUDE_CODE_EFFORT_LEVEL`,
+`alwaysThinkingEnabled`, `bashOutputMaxChars`, and `modelSettings`. Only summarized doc text
+supports those four, so verify them on your version.
+
+## For agents: rules to apply now
+
+Read this section first. Each rule is an action you can take without further research.
+
+1. Answer first. Do not restate the request. Do not close with a recap.
+2. Read file ranges (`offset`/`limit`) or `grep` first. Read a whole file only when you need all of it.
+3. Pipe noisy command output through `tail` or `grep`. Report 1 to 3 bullets, not raw output.
+4. Send test runs and wide searches to a subagent that returns only failures or conclusions.
+5. Send independent tool calls in one turn.
+6. Do only what was asked. Add no extra features, docs, or comments.
+7. Do not re-read a file you just edited. The edit tool reports failures.
+8. At a task boundary, suggest `/compact` or `/clear`. Do not carry finished work forward.
+9. When a session passes about 200k tokens of context, say so and offer a handoff.
+10. Keep every hedge. Never present a suspicion as a verified fact.
+
+To diagnose a large startup context, run in order:
+
+1. `claude -p "Reply with exactly: ok" --output-format json` from an empty directory. Expect
+   about 43k input tokens.
+2. Repeat from the project directory. The difference is the project's always-on context.
+3. Repeat with `--strict-mcp-config`. The difference is the MCP cost.
+4. If MCP cost exceeds 5k tokens, check `ENABLE_TOOL_SEARCH` first, then `ANTHROPIC_BASE_URL`.
+
+Paste this block into a project `CLAUDE.md` or `AGENTS.md` to apply rules 1 to 7 and 10:
+
+```markdown
+## Token efficiency
+- Lead with the answer. No restating the request. No closing recap.
+- Read ranges or grep first. Whole-file reads only when needed.
+- Trim noisy command output to 1-3 bullets.
+- Delegate test runs and wide searches to a subagent that returns only failures.
+- Do only what was asked. No extra features, docs, or comments.
+- Do not re-read files you just edited.
+- Keep every hedge. State only verified facts as facts.
+```
 
 ## Recommended settings
 
@@ -70,9 +108,8 @@ Set `ENABLE_TOOL_SEARCH=true` explicitly. The value matters:
 | `auto:N` | Same, with a custom threshold of N percent (0 to 100) |
 | `false` | Loads every tool upfront |
 
-Measured impact, same empty directory, 6 MCP servers, 1M window: `auto` gave 98,326 startup
-tokens and `true` gave 34,949. On a 1M window 10% is about 100k, so `auto` loads everything. On a
-200K window the same setting defers. "Tool search is on" does not mean "schemas are deferred".
+Measured impact, same empty directory, several MCP servers, 1M window: `auto` gave 98,326 startup
+tokens and `true` gave 34,949. On a 1M window 10% is about 100k, so `auto` loads everything. "Tool search is on" does not mean "schemas are deferred".
 Read the value.
 
 - With a non-first-party `ANTHROPIC_BASE_URL` and the variable unset, tools load upfront. If
@@ -157,7 +194,49 @@ of ASD-STE100 Simplified Technical English:
 
 The `dev-guidelines` placeholder skill can load a full writing guide from your local overlay.
 
-## 5. Things that did not help
+## 5. More ways to save usage
+
+Habits and instructions that cut tokens without changing settings:
+
+1. **Clear between unrelated tasks.** `/clear` starts empty. A new task in an old session pays
+   for the old context on every turn.
+2. **Keep the prompt prefix stable.** Prompt caching works on an unchanged prefix. Editing
+   `CLAUDE.md`, switching models, or toggling MCP servers mid-session can invalidate the cache.
+   Change them between sessions.
+3. **Pick the model per task.** Run routine edits on a smaller model and set
+   `CLAUDE_CODE_SUBAGENT_MODEL` for subagents. Set a per-model effort level with `modelSettings`
+   in settings, for example `{"claude-opus-5-5": {"effortLevel": "medium"}}`.
+4. **Trim noisy command output.** Pipe long output through `tail` or `grep`, or send it to a test
+   runner subagent that reports only failures. Cap shell output with `BASH_MAX_OUTPUT_LENGTH`.
+5. **Batch independent tool calls** in one turn. Each extra round trip re-sends the context.
+
+Settings used in the author's setup. The author did not check these against the docs, so verify
+them on your version before relying on them:
+
+- `disableClaudeAiConnectors: true`: skips claude.ai connectors you never use.
+- `respondToBashCommands: false`: does not answer after `!` shell commands.
+- `awaySummaryEnabled: false`: skips the summary when you return to an idle session.
+- `cleanupPeriodDays`: old transcripts accumulate without a limit. This affects disk, not tokens.
+
+### Instructions that save tokens
+
+Put these in your `CLAUDE.md` or coding guidelines. Each stops work the user did not ask for:
+
+- **Scope discipline.** Implement only what was asked. No extra features, helpers, or
+  abstractions. No README or documentation unless requested. No comments unless the code is
+  complex. Make the minimum change to existing code.
+- **Answer first.** Lead with the result. Do not restate the request, and do not close with a
+  recap.
+- **Delete text that says nothing.** Polishing a hollow paragraph yields a clean, hollow
+  paragraph.
+- **Stop at unambiguous, not at shortest.** Keep a condition, scope, or number even when it costs
+  words.
+- **Cap lists at 5 items.** Rank them, or split them into do-now and later.
+- **Confirm before costly or irreversible work**, not after.
+- **Hand off at budget limits.** When a usage window passes about 85%, write a resume document
+  first, then continue.
+
+## 6. Things that did not help
 
 Measured and ruled out as the cause of slow turns or large context:
 
