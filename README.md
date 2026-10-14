@@ -25,6 +25,8 @@ its fallback when a harness lacks them.
 Subagents in `agents/`: `planner`, `implementer`, `bug-hunter`, `guideline-checker`, `test-runner`,
 `root-cause-debugger`, `perf-profiler`.
 
+For measured ways to cut context and token use, see [docs/token-efficiency.md](docs/token-efficiency.md).
+
 ## Install
 
 Every harness below installs straight from this GitHub repo. Pick yours, run its commands once, then

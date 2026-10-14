@@ -5,7 +5,6 @@ description: >
   and regression detection. Use after implementation when a design doc exists. Triggers: "verify
   against the design", "arch verify", "did I implement everything?", "re-check the design".
 allowed-tools: Skill, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git symbolic-ref *), Bash(git branch *), Bash(gh repo view *), Bash(gh pr view *), Bash(gh api *), Bash(sed *), AskUserQuestion
-disable-model-invocation: true
 hooks:
   Stop:
     - hooks:
