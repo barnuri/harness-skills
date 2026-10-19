@@ -11,6 +11,12 @@ date: <YYYY-MM-DD>
 
 # <Feature / Project Name>
 
+> **Maintenance:** This file is written and updated with the `arch-design` skill
+> (https://github.com/barnuri/harness-skills). This markdown file is the source of truth. Edit it,
+> then re-render `design.html` with the skill. If your agent already has `arch-design`, use it.
+> If not, do not install anything. Edit this file by hand and keep the section order and the
+> `R<n>`, `D<n>` and `Q:` numbering.
+
 ---
 
 ## Document history

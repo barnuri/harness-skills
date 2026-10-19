@@ -5,7 +5,7 @@ description: >
   findings. Use when asked to review a PR, diff, branch, or snippet, before committing or
   opening a PR, and after implementing code. Triggers: "review my changes", "review PR #42",
   "re-run code review".
-allowed-tools: Agent, Skill, Bash(git diff *), Bash(git rev-parse *), Bash(git cat-file *), Bash(git status *), Bash(gh pr diff *), Bash(gh pr view *), Bash(gh api *), Bash(gh pr review *), AskUserQuestion, Read, Write, Edit, Glob, Grep
+allowed-tools: Agent, Skill, Bash(git diff *), Bash(git rev-parse *), Bash(git cat-file *), Bash(git status *), Bash(ghx pr diff *), Bash(ghx pr view *), Bash(ghx api *), Bash(ghx pr review *), AskUserQuestion, Read, Write, Edit, Glob, Grep
 hooks:
   Stop:
     - hooks:
@@ -33,7 +33,7 @@ Invoke the `session-slug` skill to resolve which `agent-spec/<slug>/` folder thi
 
 ## Review Source & Pre-check
 
-By default, review unstaged changes from `git diff`. The user may specify a PR number (`gh pr diff <number>`), branch, or specific files.
+By default, review unstaged changes from `git diff`. The user may specify a PR number (`ghx pr diff <number>`), branch, or specific files.
 
 Before launching agents, verify there is something to review:
 - PR number given → confirm it is open. Re-reviews of already-reviewed PRs are supported — do not stop because a review already happened.
@@ -43,7 +43,7 @@ Before launching agents, verify there is something to review:
 **Commit anchoring (this is what makes re-runs incremental).** Record the current commit with
 `git rev-parse --short HEAD` and write it to the tracker file's `Reviewed-Commit` frontmatter
 field. When reviewing a PR, the current commit is the PR head, not local `HEAD`: on every run,
-`git fetch origin pull/<n>/head`, take `gh pr view <n> --json headRefOid`, and read `HEAD`
+`git fetch origin pull/<n>/head`, take `ghx pr view <n> --json headRefOid`, and read `HEAD`
 below as that commit. This keeps re-runs correct when the PR branch is not checked out here
 or has new pushes. On every subsequent run, read `Reviewed-Commit` back out of the existing tracker file
 *before* launching agents and use it as the base for the gap:
@@ -68,7 +68,7 @@ issue list (keep the IDs — a full re-review is not a fresh tracker), and state
 that the gap base was overridden at the user's request. When no tracker file exists, or the
 recorded hash no longer resolves, the run is full regardless of what the user asked.
 
-**If reviewing a PR**, also fetch existing review context with `gh pr view <number> --json comments,reviews` and pass it to the review agents — do not re-flag issues human reviewers already accepted or resolved.
+**If reviewing a PR**, also fetch existing review context with `ghx pr view <number> --json comments,reviews` and pass it to the review agents — do not re-flag issues human reviewers already accepted or resolved.
 
 ## Developer Guidelines
 
@@ -260,8 +260,8 @@ Always end the review output with one of these two verdict lines so the calling 
 ## PR Iteration (end of every PR review)
 
 Each run on a PR is one iteration. After you update the tracker and print the review output,
-decide what to publish. Compare `gh api user -q .login` with
-`gh pr view <n> --json author -q .author.login`:
+decide what to publish. Compare `ghx api user -q .login` with
+`ghx pr view <n> --json author -q .author.login`:
 
 - **Current user is the PR author:** do not ask and do not publish. The review output is the
   delivery. Skip steps 1–4 and record `publish: none (author)` in the tracker. An explicit
@@ -282,9 +282,9 @@ runs step 3, **Both** runs steps 1–3, **None** runs none. Step 4 follows the a
 whatever the publish choice. When the user selects both, post the inline comments and the
 summary as one review.
 
-1. **Resolve fixed threads.** List threads with `gh api graphql` (`reviewThreads { id isResolved
+1. **Resolve fixed threads.** List threads with `ghx api graphql` (`reviewThreads { id isResolved
    resolvedBy { login } isOutdated path line comments { author body } }`). A thread counts as
-   resolved only when the current user (`gh api user -q .login`) resolved it or wrote in it.
+   resolved only when the current user (`ghx api user -q .login`) resolved it or wrote in it.
    Treat a thread someone else resolved without the current user taking part as unresolved:
    re-check it, and if its finding is still open, reply with why and reopen it
    (`unresolveReviewThread`). For every unresolved thread whose finding
@@ -292,7 +292,7 @@ summary as one review.
    fixing commit or the reason, then resolve it with the `resolveReviewThread` mutation. Never
    resolve a thread that is still open, or one a human reviewer opened and has not been answered.
    Leave declined-but-wrong replies unresolved and answer them with why it still holds.
-2. **New inline comments.** Post one review (`gh api repos/<o>/<r>/pulls/<n>/reviews`,
+2. **New inline comments.** Post one review (`ghx api repos/<o>/<r>/pulls/<n>/reviews`,
    `event: COMMENT`) with one inline comment per `🆕 New` finding and per still-open finding whose
    old thread is outdated. Anchor on a RIGHT-side line inside the current diff. Never repeat a
    finding that already has an open, non-outdated thread. For a still-open finding that has an
@@ -315,7 +315,7 @@ summary as one review.
    alone, post a review with this body and no inline comments, and leave out the threads line,
    because step 1 did not run.
 4. **Approval gate.** Only when the verdict is `✅ REVIEW SATISFIED` and the user answered yes to
-   the approval question, run `gh pr review <n> --approve` with a one-line body. Never approve
+   the approval question, run `ghx pr review <n> --approve` with a one-line body. Never approve
    without that answer, and never request changes unless asked.
 
 Record in the tracker the publish choice, which threads were resolved, and the review URL of each

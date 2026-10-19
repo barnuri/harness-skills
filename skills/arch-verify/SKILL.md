@@ -4,7 +4,7 @@ description: >
   (BN) Verify implemented code against an architecture design document, with incremental re-runs
   and regression detection. Use after implementation when a design doc exists. Triggers: "verify
   against the design", "arch verify", "did I implement everything?", "re-check the design".
-allowed-tools: Skill, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git symbolic-ref *), Bash(git branch *), Bash(gh repo view *), Bash(gh pr view *), Bash(gh api *), Bash(sed *), AskUserQuestion
+allowed-tools: Skill, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git symbolic-ref *), Bash(git branch *), Bash(ghx repo view *), Bash(ghx pr view *), Bash(ghx api *), Bash(sed *), AskUserQuestion
 hooks:
   Stop:
     - hooks:
@@ -58,7 +58,7 @@ Get the code to verify:
   command — never assume `main`:
   ```bash
   BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|origin/||')
-  [ -z "$BASE" ] && BASE=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
+  [ -z "$BASE" ] && BASE=$(ghx repo view --json defaultBranchRef -q .defaultBranchRef.name)
   [ -n "$BASE" ] || { echo "cannot detect the base branch — ask for it" >&2; exit 1; }
   git branch --show-current
   git diff "$BASE"...HEAD
@@ -212,8 +212,8 @@ If everything is covered: say so clearly — "Implementation fully addresses the
 ## Step 8: Publish to the PR
 
 Run this step only when the verified code is an open PR: the user named one, or
-`gh pr view --json number,author,state` finds one for the current branch with `state` `OPEN`.
-Compare `gh api user -q .login` with `gh pr view <n> --json author -q .author.login`:
+`ghx pr view --json number,author,state` finds one for the current branch with `state` `OPEN`.
+Compare `ghx api user -q .login` with `ghx pr view <n> --json author -q .author.login`:
 
 - **Current user is the PR author:** do not ask and do not publish. The Step 7 output is the
   delivery. Record `publish: none (author)` under `## Published`. An explicit `--comment` still
@@ -223,7 +223,7 @@ Compare `gh api user -q .login` with `gh pr view <n> --json author -q .author.lo
   `--comment` in the arguments answers with **Both**.
 - **The ask tool is unavailable, or the user declines:** publish nothing and say so.
 
-Publish as one review (`gh api repos/<o>/<r>/pulls/<n>/reviews`, `event: COMMENT`):
+Publish as one review (`ghx api repos/<o>/<r>/pulls/<n>/reviews`, `event: COMMENT`):
 
 - **Inline comments:** one comment per open item whose Notes cite a `file:line` on a RIGHT-side
   line inside the current PR diff. Read the file lines before posting, and anchor on the exact

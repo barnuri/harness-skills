@@ -87,7 +87,11 @@ create a new kebab-case one only if none does. Be specific with the filename —
 
 ## Step 3 — Write the document
 
-Read [template.md](references/template.md) and follow it section for section. Fill every section
+Read [template.md](references/template.md) and follow it section for section. Copy the template's
+**Maintenance** note under the title verbatim, so a reader of the file knows which skill and repo
+manage it. When you update an existing design that has no Maintenance note, add it under the
+title in the same change. Never add install steps to it, and never ask the user to install the
+public repo: use the `arch-design` skill that is already available in this harness. Fill every section
 with **real content**. If a value is unknown, write it as an explicit `Q:` line or
 "TBD — needs input from <team>" rather than leaving a bracket placeholder; `code-gen` treats a `Q:`
 line as a blocking question and will ask rather than guess.
