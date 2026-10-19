@@ -443,6 +443,29 @@ EOF
   check "Case 16: a valid diagram still renders" "0" "$?"
 fi
 
+# Case 17: a local image is inlined as a data URI, so the file still opens with no network.
+# A path outside the document folder and a missing file are never read; they stay a link.
+mkdir -p "$work/img/doc"
+python3 -c "import base64,sys; open(sys.argv[1],'wb').write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='))" "$work/img/doc/dot.png"
+cp "$work/img/doc/dot.png" "$work/img/outside.png"
+cat > "$work/img/doc/image.md" <<'EOF'
+---
+title: Image Doc
+---
+# Image Doc
+![A dot](dot.png)
+
+![Outside](../outside.png)
+
+![Missing](missing.png)
+EOF
+python3 "$SCRIPT" "$work/img/doc/image.md" -o "$work/img/doc/image.html" >/dev/null 2>&1
+check_contains "Case 17: local image inlined" '<img src="data:image/png;base64,' "$work/img/doc/image.html"
+check_contains "Case 17: alt text kept" 'alt="A dot"' "$work/img/doc/image.html"
+check "Case 17: only the local image is inlined" "1" "$(grep -o 'data:image/png;base64,' "$work/img/doc/image.html" | wc -l | tr -d ' ')"
+check_contains "Case 17: outside image stays a link" '<a href="../outside.png">Outside</a>' "$work/img/doc/image.html"
+check_absent "Case 17: no stray bang before a link" '!<a href' "$work/img/doc/image.html"
+
 cleanup "$work"
 
 printf '\n%s passed, %s failed\n' "$pass_count" "$failures"

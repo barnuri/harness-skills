@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import html
 import re
+from pathlib import Path
 
 from markdown_inline_parser import MarkdownInlineParser
 from markdown_table import MarkdownTable
@@ -29,8 +30,8 @@ class MarkdownBlockParser:
     _SLUG_STRIP = re.compile(r"[^a-z0-9\s-]")
     _INDENT_PER_LEVEL = 2
 
-    def __init__(self) -> None:
-        self._inline = MarkdownInlineParser()
+    def __init__(self, base_dir: Path | None = None) -> None:
+        self._inline = MarkdownInlineParser(base_dir)
         self._table = MarkdownTable()
         self.headings: list[tuple[int, str, str]] = []
         self.questions: list[tuple[str, str, str]] = []

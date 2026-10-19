@@ -202,7 +202,7 @@ All three files are sent to people as-is, so none may depend on anything else:
 
 ### What the renderer does to the document
 
-Three things happen automatically. Do not hand-write any of them into the markdown.
+Four things happen automatically. Do not hand-write any of them into the markdown.
 
 - **Document history collapses.** It renders as a closed `<details>` with the `<h2>` as its
   summary, so a reviewer opening the file lands on the content instead of scrolling past a change
@@ -216,6 +216,10 @@ Three things happen automatically. Do not hand-write any of them into the markdo
   for display. A value that is neither stays plain text, so `TBD` is safe.
 - **`Q:` lines become open-question callouts** and are indexed into the review panel. `Q3:` keeps
   your number; bare `Q:` auto-numbers. See [section-guidance.md](references/section-guidance.md).
+- **Local images are inlined.** `![alt](diagram.png)` next to `design.md` (png, jpg, gif, webp,
+  svg) becomes an `<img>` with a data URI, so the HTML stays one file and GitHub still shows the
+  image in the markdown. A remote or out-of-folder image is never fetched and renders as a link.
+  The Word export does not embed images.
 
 ### Review annotations live inside the HTML
 

@@ -55,8 +55,8 @@ class DesignHtmlRenderer:
         "approved": "status-approved",
     }
 
-    def __init__(self, annotate: bool = True, source_name: str = "") -> None:
-        self._parser = MarkdownBlockParser()
+    def __init__(self, annotate: bool = True, source_name: str = "", base_dir: Path | None = None) -> None:
+        self._parser = MarkdownBlockParser(base_dir)
         self._front_matter = DesignFrontMatter()
         self._annotate = annotate
         self.source_name = source_name
@@ -366,7 +366,9 @@ def main() -> int:
         return 1
 
     destination = args.output or args.source.with_suffix(".html")
-    renderer = DesignHtmlRenderer(annotate=not args.no_annotate, source_name=str(args.source))
+    renderer = DesignHtmlRenderer(
+        annotate=not args.no_annotate, source_name=str(args.source), base_dir=args.source.parent
+    )
     # Re-rendering must not throw away review comments the recipient already wrote, so seed from
     # an explicit source when given, otherwise from whatever is already at the destination.
     carried = renderer.existing_comments(args.comments or destination)

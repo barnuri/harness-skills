@@ -7,8 +7,10 @@ supported syntax is deliberately limited to the subset `references/template.md` 
 
 from __future__ import annotations
 
+import base64
 import html
 import re
+from pathlib import Path
 
 from html_sanitizer import HtmlSanitizer
 
@@ -36,11 +38,21 @@ class MarkdownInlineParser:
     # $\color{green}\textbf{SELECTED}$ — the GitHub-compatible decision badge.
     _LATEX_BADGE = re.compile(r"\$\\color\{(\w+)\}\\textbf\{([^}]*)\}\$")
     _LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+    _IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)\)")
+    _IMAGE_TYPES = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+    }
     _BOLD = re.compile(r"\*\*(.+?)\*\*")
     _ITALIC_STAR = re.compile(r"(?<!\*)\*([^*\n]+?)\*(?!\*)")
     _ITALIC_UNDERSCORE = re.compile(r"(?<![\w\\])_([^_\n]+?)_(?![\w])")
 
-    def __init__(self) -> None:
+    def __init__(self, base_dir: Path | None = None) -> None:
+        self._base_dir = base_dir.resolve() if base_dir else None
         self._sanitizer = HtmlSanitizer()
         self._parked: list[str] = []
 
@@ -56,6 +68,7 @@ class MarkdownInlineParser:
         text = self._CODE_SPAN.sub(
             lambda m: self._park(f"<code>{html.escape(m.group(1), quote=False)}</code>"), text
         )
+        text = self._IMAGE.sub(lambda m: self._park(self._render_image(m.group(1), m.group(2))), text)
         text = self._LATEX_BADGE.sub(
             lambda m: self._park(
                 f'<span class="badge">{html.escape(m.group(2), quote=False)}</span>'
@@ -82,6 +95,25 @@ class MarkdownInlineParser:
             # Keep the text visible rather than silently dropping it, but never make it clickable.
             return f"{label} ({html.escape(url, quote=False)})"
         return f'<a href="{html.escape(url, quote=True)}">{label}</a>'
+
+    def _render_image(self, alt: str, src: str) -> str:
+        data_uri = self._inline_image(src)
+        if data_uri:
+            return f'<img src="{data_uri}" alt="{html.escape(alt, quote=True)}">'
+        label = html.escape(alt or src, quote=False)
+        if self._sanitizer.is_safe_url(src):
+            return f'<a href="{html.escape(src, quote=True)}">{label}</a>'
+        return label
+
+    def _inline_image(self, src: str) -> str | None:
+        """Embed a local image as a data URI, so the rendered file still opens with no network."""
+        if self._base_dir is None or not self._sanitizer.is_safe_url(src) or ":" in src:
+            return None
+        path = (self._base_dir / src).resolve()
+        mime = self._IMAGE_TYPES.get(path.suffix.lower())
+        if not mime or not path.is_relative_to(self._base_dir) or not path.is_file():
+            return None
+        return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode('ascii')}"
 
     def _restore(self, text: str) -> str:
         return self._PLACEHOLDER_PATTERN.sub(
