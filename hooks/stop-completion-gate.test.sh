@@ -253,6 +253,22 @@ else
 fi
 rm -rf "$w" /tmp/out.$$
 
+# --- Case 7b: a dispatched task marked "- 🔄 … (bg: …)" releases the gate even while later
+# tasks are still "- [ ]" — the session is waiting on its own background agent.
+w=$(new_workdir)
+publish_slug "$w" "sess-7b" "2026-10-22-bg-wait"
+write_state_file "$w" "2026-10-22-bg-wait" "tasks.md" "- 🔄 Task 1: api (bg: workflow)
+- [ ] Task 2: docs"
+run_hook "$w" "sess-7b" "tasks.md" "^- \[ \]" "code-gen" >/tmp/out.$$ 2>&1
+code=$?
+assert_exit "background-owned 🔄 line releases the gate despite later [ ] tasks" 0 "$code"
+write_state_file "$w" "2026-10-22-bg-wait" "tasks.md" "- 🔄 Task 1: api
+- [ ] Task 2: docs"
+run_hook "$w" "sess-7b" "tasks.md" "^- \[ \]" "code-gen" >/tmp/out.$$ 2>&1
+code=$?
+assert_exit "plain 🔄 line without a (bg: …) owner still blocks on later [ ] tasks" 2 "$code"
+rm -rf "$w" /tmp/out.$$
+
 # --- Further edge cases: malformed/adversarial inputs the mechanism must
 # survive without misbehaving, even though none of these caused the original
 # bug directly — worth locking in given how easily "which slug am I" logic can

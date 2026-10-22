@@ -53,6 +53,8 @@ const IMPL_SCHEMA = {
     no_op: { type: 'boolean', description: 'True when the edit would not have changed any file' },
     blocker: { type: 'string', description: 'Set only when status is blocked — the decision the user must make' },
     tests_run: { type: 'array', items: { type: 'string' }, description: 'Test commands actually executed' },
+    deviations: { type: 'array', items: { type: 'string' }, description: 'Each deliberate difference from the task text or plan.md, and why' },
+    blast_radius: { type: 'array', items: { type: 'string' }, description: 'Files outside your scope that your change affects or breaks (callers, fixtures, golden lists)' },
   },
 }
 
@@ -167,6 +169,7 @@ function implementPrompt(task, context) {
     `- If the change turns out to be a no-op (the file already has this), set no_op true and write nothing.`,
     `- If you hit a decision only the user can make, set status "blocked" and describe it in "blocker" instead of guessing.`,
     `- If the task is to write tests, actually run them and list the commands in tests_run. A test written but not run is not done.`,
+    `- List every deliberate deviation in deviations and every out-of-scope file your change affects or breaks in blast_radius. Never put either in agent memory.`,
   ]
     .filter(Boolean)
     .join('\n')
@@ -188,9 +191,6 @@ function noopVerifyPrompt(task, scope) {
   ].join('\n')
 }
 
-// The reviewer deliberately never sees the implementer's summary or reasoning — access to the
-// worker's account primes the verifier to agree with it. It gets the task and the file list, and
-// reads the diff itself.
 function guidelinesRule() {
   if (guidelines.length === 0) {
     return `No guideline files are configured: follow the repo's CLAUDE.md/AGENTS.md.`
@@ -198,20 +198,26 @@ function guidelinesRule() {
   return `Coding standards: read ${guidelines.join(', ')} before judging or writing code.`
 }
 
-function reviewPrompt(task, filesWritten) {
+// The reviewer never sees the implementer's summary (it primes agreement). Deviations and blast
+// radius are passed as claims to check, because the diff cannot show them.
+function reviewPrompt(task, filesWritten, deviations, blastRadius) {
   return [
     `Review the change just made for task ${task.id}: ${task.description}`,
     ``,
     `Files written: ${filesWritten.join(', ') || '(none reported — locate the change via git status)'}`,
     `Read the actual diff yourself (git diff HEAD -- <files>) and judge the change on its own.`,
     `You have intentionally not been given the implementer's summary or reasoning.`,
+    deviations.length > 0 ? `\nClaimed deviations from the brief (check each is justified, and flag any the diff shows but this list omits):\n- ${deviations.join('\n- ')}` : null,
+    blastRadius.length > 0 ? `\nClaimed blast radius outside the task's files (check each is real and left in a state the caller can act on):\n- ${blastRadius.join('\n- ')}` : null,
     ``,
     `Precision over volume. Only report findings you are confident about — confidence 80 or above.`,
     `Do not flag pre-existing issues outside this change, linter-catchable formatting, or subjective`,
     `style not covered by the coding standards. ${guidelinesRule()}`,
     ``,
     `Return verdict "satisfied" when nothing reaches confidence 80, "needs_fixes" otherwise.`,
-  ].join('\n')
+  ]
+    .filter((line) => line !== null)
+    .join('\n')
 }
 
 // ---- run ----
@@ -303,7 +309,7 @@ for (const batch of batches) {
         return skipped
       }
 
-      const review = await agent(reviewPrompt(task, impl.files_written), {
+      const review = await agent(reviewPrompt(task, impl.files_written, impl.deviations || [], impl.blast_radius || []), {
         label: `review:${task.id}`,
         phase: 'Review',
         schema: REVIEW_SCHEMA,
@@ -330,6 +336,8 @@ return {
     summary: r.impl.summary,
     files_written: r.impl.files_written,
     tests_run: r.impl.tests_run || [],
+    deviations: r.impl.deviations || [],
+    blast_radius: r.impl.blast_radius || [],
     blocker: r.impl.blocker || null,
     review_verdict: r.review ? r.review.verdict : 'skipped',
     findings: r.review ? r.review.findings : [],

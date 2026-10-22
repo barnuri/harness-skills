@@ -14,6 +14,11 @@ Find every file that is permanently injected into this agent's context on every 
 and move whatever isn't needed on every turn into a file that loads on demand instead —
 without losing a single word of it.
 
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
+defaults below.
+
 ## The loading model this skill is built on
 
 Only three things are ever guaranteed to load automatically, every session, in full:
@@ -140,11 +145,6 @@ or genuinely used-every-session was moved out — those stay inline by definitio
 `references/classification-heuristics.md`'s "keep inline" criteria).
 
 ## Report the result
-
-Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
-`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
-updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
-defaults below.
 
 When the run is done, report the reduction for every edited file — both as a raw count and as
 a percentage — e.g. `~/.claude/CLAUDE.md: 220 → 198 lines (-22 lines, -10%)`. Compute this from

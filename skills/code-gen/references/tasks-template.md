@@ -6,6 +6,8 @@ Expand `agent-spec/<slug>/tasks.md` from its skeleton using this shape:
 ---
 Created: YYYY-MM-DD HH:MM
 Last Updated: YYYY-MM-DD HH:MM
+Owner: code-gen
+Branch: <branch>
 ---
 
 # Tasks: [Feature Name]
@@ -39,7 +41,7 @@ Last Updated: YYYY-MM-DD HH:MM
 ### Phase 2 — Polish / Cross-cutting
 - [ ] Task N: [cleanup, error handling, docs if required] — [file(s)]
 
-> Legend: `[ ]` not started · `🔄` in progress · `⏸` blocked — see plan.md Open Questions · `[x] ✓` done · `[P]` parallel-safe
+> Legend: `[ ]` not started · `🔄` in progress (or dispatched: `(bg: <owner>)`) · `⏸` blocked — see plan.md Open Questions · `[x] ✓` done · `[P]` parallel-safe
 
 ## Notes
 [Key decisions, constraints, dependencies discovered during implementation]

@@ -107,6 +107,43 @@
         "Both findings end the run as 📤 Reported in the tracker, not ❌ Open",
         "The report still ends with the '🔄 REVIEW NEEDS FIXES' verdict line"
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "Review PR #512 (another author's PR). After the review output, the user writes: 'this retry loop should use the shared backoff helper, and the timeout looks too short'.",
+      "expected_output": "The agent treats the remark as review input: it re-checks the code and adds or updates findings. It does not edit source files or invoke code-gen.",
+      "files": [],
+      "expectations": [
+        "No source file outside agent-spec/ is modified",
+        "The code-gen skill is not invoked",
+        "The tracker gains or updates findings for the backoff helper and the timeout",
+        "The tracker header has 'Mode: review-only'"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Review my changes. The working tree has no unstaged edits. `billing/invoice.py` has a staged change that divides by `len(items)` with no empty-list guard. `billing/tax.py` is a new untracked file whose `rate_for(region)` returns `None` for an unknown region, and its caller adds the result to a float.",
+      "expected_output": "Both the staged change and the untracked file are reviewed. The run does not stop with 'nothing to review' because plain `git diff` is empty.",
+      "files": [],
+      "expectations": [
+        "The review source covers staged changes (git diff HEAD) and untracked files (git ls-files --others --exclude-standard), not only git diff",
+        "The run does not report 'nothing to review'",
+        "The empty-list division in billing/invoice.py is reported as a finding",
+        "billing/tax.py is reviewed in full and gets its own guideline-checker call",
+        "Each reported finding has a P0-P3 priority in the tracker beside its confidence"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Review PR #77 (another author's PR) at head abc1234. The review is clean and the user answers 'Both' and 'yes, approve'. Before the review is posted, the author pushes a new commit and the PR head becomes def5678.",
+      "expected_output": "The head re-check before posting finds the moved head. Nothing is posted with stale anchors, the PR is not approved, and the agent offers a gap re-run.",
+      "files": [],
+      "expectations": [
+        "The PR head (headRefOid) is read again right before posting or approving",
+        "No review with line anchors from abc1234 is posted",
+        "ghx pr review --approve is not run",
+        "The output says new commits arrived after the review and offers a gap re-run through the ask tool"
+      ]
     }
   ]
 }

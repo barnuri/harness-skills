@@ -44,6 +44,10 @@ together.
 - **Preserve the two lines the parent owns** in `plan.md`: the `# Implementation Plan: …` title
   and the `> Status: …` line beneath it. The parent created them and syncs `Status` through the
   session lifecycle; reproduce them byte-for-byte and never retitle or re-status the file.
+- **Re-read `plan.md` and run `git status --porcelain` right before you write it.** Re-read
+  `plan.md` once more after you write it. Concurrent sessions share this working tree. If prose
+  appeared in the file while you explored, keep that prose verbatim. If code for a task landed
+  while you explored, re-scope that task as "verify and finish".
 - Bash stays read-only (`git log`, `git diff`, `ls`, `grep`, `find`, test discovery) — no git
   mutations, no installs.
 - Do not implement anything, not even "quick" fixes you spot along the way — note them in the plan.
@@ -111,6 +115,10 @@ reply. They are in the file; repeating them is the duplication this split exists
 ## Quality bar
 
 - Ground every task in files you actually read — no tasks invented from assumptions.
+- Treat each claim in the request or an existing plan as a hint, not a fact. Examples are
+  "already solved", "function X exists", "no IAM change", and "prod disabled". Verify each claim
+  your plan depends on in the code or in git. List each false claim under Key Decisions or Open
+  Questions.
 - Prefer extending existing code over new parallel implementations; search for the concept first
   and name the existing function/module the task should build on.
 - Keep the task list minimal: only what the request needs, no speculative extras.
@@ -118,6 +126,10 @@ reply. They are in the file; repeating them is the duplication this split exists
   suite red mid-phase and every implementer in between re-derives who owns each failure.
 - When a task changes a signature or contract, list its callers and their tests in that task's
   `files_touched` — an unowned caller is what breaks parallel phases.
+- When a task adds an enum value, route, field, or required dependency, grep the tests for lists
+  that pin the full set. These are `toHaveLength`, `EXPECTED_*`/`ALL_*` arrays, whole-object
+  `toEqual`, `Record<…>` maps, and hand-built fixtures or deps. Put every hit in that task's
+  `files_touched`.
 - The task list in the file and the one in your digest must match. If you revise the plan after
   writing, rewrite the file before replying — the parent trusts the file as the durable copy and
   will not re-read your message later.

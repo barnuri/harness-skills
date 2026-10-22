@@ -38,21 +38,34 @@ memory with anything durable — a gotcha hit, a convention discovered, a test c
 - **No git mutations.** No branch, commit, stash, push, `mv`, or anything that rewrites state.
   Read-only git (`diff`, `status`, `log`) is fine.
 - **No dependency installs** (`uv add`, `npm install <pkg>`, …) unless the task says so — report
-  the need as a blocker.
+  the need as a blocker. Install-state errors are blockers too: `Cannot find module`, a dangling
+  workspace symlink, a registry 401, or a stale venv. Report them, and never run an install to clear
+  them.
 
 ## How to work
 
 - **Check the tree first.** A previous attempt may already have landed this task. Look at
   `git status --porcelain` (untracked files too — they don't show in `git diff`) and the task's
   files; if the change is already there, verify it and report that, rather than re-implementing.
+- **Record the start commit** (`git rev-parse HEAD`) before you edit. Concurrent sessions commit
+  mid-task, so judge each lint, tsc or test failure against that commit, not against `HEAD`. Cheap
+  forms: `git show <sha>:<file>` piped to the linter on stdin, or `git archive <sha> <dir>` extracted
+  into the scratchpad. Report each remaining failure as new or pre-existing.
 - If the task brief and plan.md disagree, follow the brief and report the disagreement.
+- Factual claims in the brief or plan.md ("already exists", "no IAM change") are hints. Verify each
+  claim your change depends on before you build on it. Report a false claim as a deviation.
 
 - Follow the coding standards: read the guideline file paths the caller passed (this agent has
   no Skill tool; if one is a `dev-guidelines/SKILL.md`, read the reference files it routes to).
   When the caller said "no guidelines configured", follow the repo's `CLAUDE.md`/`AGENTS.md`
-  and local precedent. Match the surrounding code's naming, idiom, and comment
-  density — the change should read as if the original author wrote it.
+  and local precedent. Match the surrounding code's naming and idiom. Local precedent never
+  overrides a guideline rule that says "always" or "never". Follow those rules even when the code
+  around your change breaks them.
 - Keep the change minimal: what the task asks, nothing more.
+- Before you write a new test helper or fixture, grep the repo's shared test folders (for example
+  `src/test/`, `tests/fixtures/`, `tests/support/`) and sibling test files for an existing one.
+- Add an import and its first usage in the same Edit. Formatter hooks strip an unused import
+  between edits.
 - If the change turns out to be a no-op (the code already does this), report `no_op: true` and
   write nothing — never make a cosmetic edit just to have something to show. The claim is verified
   against git evidence downstream, so an honest no-op costs nothing and a false one is caught.
@@ -61,12 +74,24 @@ memory with anything durable — a gotcha hit, a convention discovered, a test c
 - If the task is to write tests, actually run them and report the exact commands executed with
   their results. A test written but not run is not done. When implementing non-test code, run the
   tests covering the files you changed (not the full suite) and report those commands too.
+- Re-run once before you debug a failure in a file you did not touch, a 0 ms result, a worker
+  timeout, or a deadlock. Parallel implementers share the test database and CPU. If the re-run
+  passes, report it as "flaky: passed on re-run" with the command.
 
 ## Environment
 
 The shell is usually zsh on macOS: a space-separated `$FILES` does not word-split (use an array),
 `ls` may be aliased (use `find` or `command ls`), quote globs in flags (`--include="*.ts"`), there
-is no `timeout`, and `/bin/bash` is 3.2. Run formatters only on the files you wrote.
+is no `timeout`, and `/bin/bash` is 3.2.
+
+Other sessions edit and commit this working tree while you work. Keep scratch and probe files in
+the scratchpad. If imports must resolve, use an in-app `zz-scratch-*` file, `trash` it right after
+the run, and name it in your report. Never leave a scratch file in the tree for another session to
+commit.
+
+Run formatters only on the files you wrote. Before a write-mode formatter (`prettier --write`,
+`ruff format`), check that the file is formatter-clean at the start commit. If it is not clean,
+format only your own hunks by hand. After any formatter run, `git diff` must show only your hunks.
 
 ## Code-gen session files (context only)
 

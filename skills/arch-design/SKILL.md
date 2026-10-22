@@ -16,6 +16,11 @@ section list, and do not add or rename sections. Optional sections may be delete
 apply, and Design Alternatives may be moved to the end once its decisions are settled — the shared
 template sanctions that one relocation.
 
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
+defaults below.
+
 There are three outputs, from one source:
 
 | File | Who it is for | How it is produced |
@@ -395,11 +400,6 @@ vocabulary — the word chosen because it sounds more senior than the plain one.
 - Reference codes make the document citable: `R<n>` requirements, `Q:` open questions, `D<n>`
   decisions. Use them once a section has three or more items. Never renumber an `R<n>` after
   review — append instead, because downstream tasks and tests cite them.
-
-Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
-`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
-updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
-defaults below.
 
 **Before rendering, reread twice — once to cut, once for vocabulary.** Every paragraph that does not
 change a reader's decision comes out, and every word a second-language reader would stop on gets

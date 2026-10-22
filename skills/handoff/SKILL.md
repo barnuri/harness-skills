@@ -15,6 +15,11 @@ pick the work up exactly where it stands. The document — not the conversation 
 transfer medium, so everything load-bearing that exists only in this conversation must land in
 the file.
 
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
+defaults below.
+
 ## Hard constraint — document only, never implement
 
 This skill **must not modify implementation files**. Create or update the handoff document and
@@ -210,11 +215,6 @@ handoff written after the budget is gone is a handoff that never got written. Th
 in one line where it is and which window fired, and carry on if budget remains.
 
 ## Step 5 — Report
-
-Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
-`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
-updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
-defaults below.
 
 One short message: the handoff path, why it was written (manual vs which budget window), and the
 single most important next step. Do not paste the document back into the conversation — the

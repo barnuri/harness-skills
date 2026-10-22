@@ -4,7 +4,7 @@ description: >
   (BN) Generate production-quality code with persistent task tracking. Use when asked to
   implement, write, or build code, fix a bug, refactor, or resume an in-progress coding session.
   Triggers: "implement X", "add feature Y", "fix this bug", "continue the previous task".
-allowed-tools: Agent, Skill, Workflow, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git log *), Bash(git status *), Bash(find *), Bash(grep *), Bash(ls *), Bash(wc *), Glob, Grep, ToolSearch, TaskCreate, TaskUpdate, TaskList, AskUserQuestion
+allowed-tools: Agent, Skill, Workflow, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git log *), Bash(git status *), Bash(git worktree list*), Bash(ghx pr view *), Bash(find *), Bash(grep *), Bash(ls *), Bash(wc *), Glob, Grep, ToolSearch, TaskCreate, TaskUpdate, TaskList, AskUserQuestion
 hooks:
   Stop:
     - hooks:
@@ -15,6 +15,11 @@ hooks:
 # Code Generation
 
 You are generating production-quality code. Every output must follow the shared developer guidelines and language-specific rules.
+
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
+defaults below.
 
 ## Session Bootstrap
 
@@ -42,24 +47,28 @@ Create both files **right now**, before any analysis: each gets the standard tim
 (see Timestamp Headers), then `plan.md` gets `# Implementation Plan: [FEATURE]`, a
 `> Status: 🔄 Analysing` line, and empty `## Summary` / `## Technical Context` sections marked
 `[filling in…]`; `tasks.md` gets `# Tasks: [Feature]`, `## Status` = `🔄 In progress`, and one
-placeholder task line. Both are **live documents** — update them continuously as understanding
+placeholder task line written as `- 🔄 Planning`. A `- [ ]` placeholder trips the Stop hook while
+the planner is still running. Both are **live documents** — update them continuously as understanding
 grows, not in one batch at the end.
 
 ## Developer Guidelines
 
 Before generating any code, load the coding standards and apply every rule to all code you
-produce. Resolve the coding standards in this order. The first source that exists wins:
+produce. Resolve the coding standards in this order. The first of sources 1–2 that exists wins:
 
 1. **`dev-guidelines` skill installed** → invoke it. The files it loads are the guideline
    files. If it reports `dev-guidelines: not configured`, continue to the next source.
 2. **Local overlay** → guideline files named in this skill's `local.md` (`<skill-dir>/local.md`,
    else `~/.config/harness-skills/<skill-name>/local.md`), or held in the `local/` folder beside it.
-3. **Target repo** → the coding rules in the repo's `CLAUDE.md`/`AGENTS.md`.
+3. **Target repo** → the coding rules in the repo's `CLAUDE.md`/`AGENTS.md`. These always apply
+   when they exist, in addition to source 1 or 2. They are never dropped because a guideline
+   skill resolved.
 4. **None** → no guideline check this session. Say so once in the final summary. Planning,
    implementation, bug-hunting and tests still run.
 
-Pass the resolved guideline file paths to every agent that writes or checks code
-(`implementer`, `guideline-checker`). When nothing resolved, tell them "no guidelines
+Pass the resolved guideline file paths, plus the repo's `CLAUDE.md`/`AGENTS.md` paths, to every
+agent that writes or checks code (`implementer`, `guideline-checker`). `guideline-checker` owns
+the precedence when the two disagree. When nothing resolved, tell them "no guidelines
 configured".
 
 ## Blocking Questions — Ask, Don't Guess
@@ -261,8 +270,14 @@ Tier rules — these are the invariants that keep the Completion Gate meaningful
   All `🔄` → `[x] ✓` marking happens here, per task, from the returned results — three tasks
   finishing together still produce three separate updates.
 - **Tier 1 runs in the background.** Wait for its completion notification before marking
-  anything — never mark from a prediction of what the workflow will return.
+  anything `[x] ✓` — never mark from a prediction of what the workflow will return.
 - **`⏸` (blocked) tasks never enter a batch or pipeline**, in any tier.
+- **Mark a task `🔄` when you dispatch it** to a workflow, an implementer, or a background
+  planner, and name the owner on the line (`- 🔄 Task 3: … (bg: workflow)`). While your own
+  background agent or workflow owns a `🔄` line, end the turn and wait for its completion
+  notification. The Stop hook lets the turn end while a `(bg: …)` line exists. Do not poll. Do not
+  reply only "still waiting". Never mark the task `⏸` for
+  this: `⏸` is only for a question to the user.
 - **Serial is the default.** A task is parallel-safe only if its file list is enumerated and
   disjoint from every other task in its group; when in doubt, it runs alone.
 - **Returned `blocked_ids` flow into Blocking Questions** (mark `⏸`, log in plan.md) and
@@ -281,6 +296,18 @@ If the grep produces any output (any unchecked `[ ]` or in-progress `🔄` line)
 - Continue working until every task is `[x] ✓`.
 - Do not stop at a phase boundary and treat the remainder as optional — the task list is a commitment, not a suggestion.
 - Never declare done from memory — always re-read and re-grep the file.
+
+A `🔄` line that your own running background agent or workflow owns is not a reason to keep
+working: end the turn, and resume on its completion notification.
+
+**Check the served change before you declare done.** Passing tests do not show that the user
+can see the change. When the change affects something that runs (a UI, a server, a worker, a
+scheduled job), rebuild or restart what serves it. Then check the served version yourself:
+Playwright for a UI, `curl` of the endpoint or its version route for a server, or trigger the
+first real run of a new job and read its output. Never hand "run X to try it" back to the user.
+When the user named a design, mockup, or reference, record it as a requirement in `plan.md` and
+compare the served result against it. If this environment cannot start the app, say so in the
+final summary. Do not imply that a check ran.
 
 `⏸` (blocked) lines are intentionally excluded from this grep — once you've logged the question in plan.md and asked per **Blocking Questions**, it is legitimate to stop and wait rather than loop. Report open `⏸` items to the user alongside the completion status; the session isn't `✅ Done` while any remain.
 
@@ -367,11 +394,6 @@ a `---`-fenced header holding `Created: YYYY-MM-DD HH:MM` and `Last Updated: YYY
 only `Last Updated`.
 
 ## Code Review Is Manual
-
-Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
-`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
-updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
-defaults below.
 
 `code-gen` does not auto-invoke the `cr` skill after implementation. Per-task guideline
 compliance is already covered above (Step 3's `guideline-checker` check); a full bug/compliance

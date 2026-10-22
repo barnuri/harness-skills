@@ -18,6 +18,11 @@ code-generation or review skill installed alongside) invoke this skill instead o
 their own slug logic — if the resolution or publishing behavior needs to change, change it
 here once.
 
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
+defaults below.
+
 ## Step 1 — Derive a slug (new session only)
 
 Generate a short kebab-case name for the task (2–4 words), then prefix it with today's
@@ -144,6 +149,7 @@ resume, or clean sessions (the `agent-spec` skill) work without knowing which sk
   |---|---|
   | `- [ ]` | Not started |
   | `- 🔄` | In progress |
+  | `- 🔄 … (bg: <owner>)` | Dispatched to this session's own background agent or workflow. Stop gates let the turn end while one exists |
   | `- ⏸` | Blocked, waiting on a question |
   | `- [x] ✓` | Done |
 
@@ -166,10 +172,5 @@ token from Step 5. Callers still own creating their own state files (`tasks.md`,
 `code-review.<harness>-<model>.md`, `arch-design-diff.<harness>-<model>.md`, …) under
 `agent-spec/<slug>/` — this skill only resolves *which* folder that is, plus the harness
 token when needed.
-
-Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
-`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
-updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
-defaults below.
 
 > Harness note: the `user-invocable: false` frontmatter key is Claude-Code-only; opencode/pi ignore it. There, the description wording above is the only guard — no behavioral fallback needed.

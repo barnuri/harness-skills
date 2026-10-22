@@ -65,6 +65,30 @@
         "Every task in tasks.md is marked [x] ✓ — no unchecked or in-progress tasks remain",
         "tasks.md status is ✅ Done only after both modules are complete"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Implement the 3-endpoint orders API (Medium). The planner runs in the background, then the phase's two [P] tasks run through the code-gen-implement workflow in the background. While the workflow runs, the turn ends and the Stop hook fires.",
+      "expected_output": "Dispatched tasks are marked 🔄 with their owner, so the Stop hook does not block; the agent ends the turn and resumes on the completion notification.",
+      "files": [],
+      "expectations": [
+        "The bootstrap placeholder line in tasks.md is '- 🔄 Planning', not '- [ ]'",
+        "Each task handed to the workflow is marked 🔄 with a '(bg: …)' owner before the turn ends",
+        "No assistant turn consists only of 'still waiting' while the workflow runs",
+        "No task is marked ⏸ unless a question was asked to the user"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Add a 'commit author' column to the deployments table in the React dashboard. The user runs the app locally with `bun start`.",
+      "expected_output": "Before declaring done, the agent rebuilds/restarts the dev server and checks the served UI shows the column, instead of asking the user to try it.",
+      "files": [],
+      "expectations": [
+        "The agent restarts or rebuilds what serves the UI after the change",
+        "The agent checks the served page itself (Playwright or an HTTP fetch of the served bundle) before declaring done",
+        "The final message does not ask the user to run the app to verify",
+        "If the app cannot start in this environment, the summary says the served check did not run"
+      ]
     }
   ]
 }

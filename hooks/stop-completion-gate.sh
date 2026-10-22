@@ -87,6 +87,12 @@ fi
 
 [ -z "$f" ] && exit 0
 
+# A "- 🔄 … (bg: <owner>)" line means this session's own background work is running; its completion notice resumes the turn.
+if grep -qE '^[[:space:]]*- 🔄 .*\(bg: ' "$f"; then
+  rm -f "$(dirname "$f")/.stop-hook-retries-$label"
+  exit 0
+fi
+
 retry_file="$(dirname "$f")/.stop-hook-retries-$label"
 n=$(cat "$retry_file" 2>/dev/null || echo 0)
 n=$((n + 1))

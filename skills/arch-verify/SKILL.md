@@ -4,7 +4,7 @@ description: >
   (BN) Verify implemented code against an architecture design document, with incremental re-runs
   and regression detection. Use after implementation when a design doc exists. Triggers: "verify
   against the design", "arch verify", "did I implement everything?", "re-check the design".
-allowed-tools: Skill, Read, Write, Edit, Bash(git rev-parse *), Bash(git diff *), Bash(git symbolic-ref *), Bash(git branch *), Bash(ghx repo view *), Bash(ghx pr view *), Bash(ghx api *), Bash(sed *), AskUserQuestion
+allowed-tools: Skill, Read, Write, Edit, Glob, Grep, Bash(git fetch *), Bash(git log *), Bash(git worktree list*), Bash(git rev-parse *), Bash(git diff *), Bash(git symbolic-ref *), Bash(git branch *), Bash(ghx repo view *), Bash(ghx pr view *), Bash(ghx api *), Bash(sed *), AskUserQuestion
 hooks:
   Stop:
     - hooks:
@@ -18,6 +18,11 @@ You are checking whether the current code implementation addresses the requireme
 defined in an architecture design document. You maintain a persistent
 `arch-design-diff.<harness>-<model>.md` file under `agent-spec/<slug>/` that tracks alignment
 status — enabling fast, incremental re-runs after code changes.
+
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
+defaults below.
 
 ## Slug Resolution
 
@@ -132,6 +137,8 @@ Use this exact structure:
 ---
 Created: YYYY-MM-DD HH:MM
 Last Updated: YYYY-MM-DD HH:MM
+Branch: <branch-name>
+PR: #<n>   # omit when there is no PR
 ---
 
 # Architecture Design Alignment
@@ -223,7 +230,10 @@ Compare `ghx api user -q .login` with `ghx pr view <n> --json author -q .author.
   `--comment` in the arguments answers with **Both**.
 - **The ask tool is unavailable, or the user declines:** publish nothing and say so.
 
-Publish as one review (`ghx api repos/<o>/<r>/pulls/<n>/reviews`, `event: COMMENT`):
+Before you post, run the head re-check in the `cr` skill's `references/pr-iteration.md` when
+that skill is installed: re-read the PR head SHA, set `commit_id` to the SHA you verified, and post
+nothing if the head moved. Publish as one review (`ghx api repos/<o>/<r>/pulls/<n>/reviews`,
+`event: COMMENT`):
 
 - **Inline comments:** one comment per open item whose Notes cite a `file:line` on a RIGHT-side
   line inside the current PR diff. Read the file lines before posting, and anchor on the exact
@@ -248,11 +258,6 @@ When re-run after code changes:
 This means the file is always authoritative for the current state, not an append log.
 
 ## Guidelines
-
-Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
-`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
-updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
-defaults below.
 
 - **Stay focused on design alignment** — code quality belongs in `cr`, not here.
 - **Be specific** — name the exact file, function, or class that covers (or fails to cover)

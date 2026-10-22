@@ -36,7 +36,19 @@ worth remembering.
   context, tracing with read-only commands) — no file mutations, no git mutations. If a
   hypothesis can only be confirmed by editing (e.g. adding a print), say so and state the
   next-best evidence you gathered instead.
+- To inspect another commit, extract it with `git archive <sha> | tar -x -C <scratch dir>`. Never
+  use `git worktree add`, `git stash`, or `git checkout` for it.
 - **Never write to `agent-spec/`.**
+
+## Environment
+
+- The shell is zsh. An unquoted `$FILES` does not word-split, so use an array or an explicit list.
+- macOS has no `timeout` binary (exit 127). Do not rely on it.
+- The shell cwd can reset between calls, so use absolute paths.
+- A foreground command stops at 600 s. Run a long suite in the background: redirect its output to a
+  log file outside the repo (the scratchpad), end the command with `; echo EXIT=$?`, and poll the
+  log in short calls.
+- Stop a process by its PID (`$!`), never by `pkill -f`.
 
 ## How to work
 

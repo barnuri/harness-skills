@@ -20,6 +20,11 @@ primary obligation: **read every source completely before forming any opinion**.
 skim, never rely on prior-context summaries, never stop mid-file. If a source is long,
 paginate — but finish it.
 
+Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
+`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
+updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
+defaults below.
+
 ## Cardinal Rule: Read Everything In Full
 
 Before moving past any source in Phase 0:
@@ -163,7 +168,7 @@ If retrospect is unavailable, skip and note it in `plan.md`.
 
 ## Phase 1 — External Research (parallel)
 
-Spawn both agents in the background simultaneously — do not wait for one before starting the other.
+Spawn all agents in the background simultaneously — do not wait for one before starting the other.
 
 **Agent A — CandleKeep (spawn as `candlekeep-cloud:librarian` subagent in background):**
 Prompt: "Find books about Claude Code skill architecture, agent best practices, writing
@@ -183,7 +188,30 @@ pitfalls. Return actionable findings with citations."
 If the `candlekeep-cloud:*` agent types are not in this session's agent list (the plugin is
 not always enabled), skip Agent A and note it in `plan.md` — do not substitute a general agent.
 
-Wait for both. Synthesize findings into `plan.md` under `## Phase 1 Findings`.
+**Agent C — Official code-review skills (one background subagent per source group):**
+Run Agent C only when the audited repo contains a code-review skill. Below, "the review skill"
+means that skill and its review agents, named as the audited repo names them.
+Read the sources file: `~/.config/harness-skills/skills-evolvement/official-review-sources.md`
+when it exists, else [official-review-sources.md](references/official-review-sources.md). It lists the official
+code-review skills and prompts of other harnesses (Claude Code, Codex CLI, GitHub Copilot) and
+the last version this skill read of each. For each source group, spawn one subagent with web and
+`gh` access. Tell it to:
+1. Get the current version of each source: the file's latest commit SHA, the release tag, or
+   the doc fetch date.
+2. Skip a source whose version equals the recorded one. Report it as "unchanged".
+3. Read every changed or new source in full. Read the diff since the recorded SHA when one exists.
+4. Compare the recipe with the review skill. Return at most 10 ranked ideas, each marked ADOPT,
+   ADAPT, or SKIP with a one-line reason and the section of the review skill it changes.
+5. Write its findings to `agent-spec/<slug>/official-<group>.md` with a Sources table (name, URL,
+   version, read date).
+
+Also search for a new official review skill in each group, and list each one found in the
+findings file. A source bundled inside an installed program (no public URL) is read from the
+local install: take its version from the program's version command. When the program is not
+installed, report the source as "not checked". Skip Agent C when the session has no web access, and note it in `plan.md`.
+
+Wait for all agents. Synthesize findings into `plan.md` under `## Phase 1 Findings`. Every
+ADOPT or ADAPT idea for the review skill becomes a Phase 2 task.
 
 ---
 
@@ -239,6 +267,9 @@ fix stays testable (correction-harvesting).
 
 Work through the task list. For each task:
 1. Mark it `🔄` in `tasks.md` before starting — or `⏸` if it's blocked on an open question (see Phase 2); skip blocked tasks until answered.
+   A task handed to a background agent is `🔄` with a `(bg: <owner>)` note. While it runs, end
+   the turn and resume on its completion notification. The Stop hook lets the turn end while a
+   `(bg: …)` line exists.
 2. Apply the change (direct edit or via `code-gen` skill for larger changes). Skill text is
    instructions another agent executes. Write it with one instruction per sentence, one name
    per concept, and every hedge kept. If the loaded coding standards name a prose linter, run
@@ -271,10 +302,16 @@ After all tasks are complete:
    for the most significant finding from this session — the one insight a future
    instance of this skill should know about this repo's skill architecture.
 
-3. **Post a brief summary** to the user: what was found, what was changed, what patterns
+3. **Record the official sources read.** Update the version and read date of every source that
+   Agent C read, including the unchanged ones, and add the new sources it found. Write to the
+   sources file Agent C read. When that is the copy inside this skill and the skill folder is a
+   plugin install, write to `~/.config/harness-skills/skills-evolvement/official-review-sources.md`
+   instead, so a plugin update does not reset it. The next run compares against these versions.
+
+4. **Post a brief summary** to the user: what was found, what was changed, what patterns
    to watch for next time.
 
-4. **Sync status lines**: set `agent-spec/<slug>/tasks.md`'s `## Status` to `✅ Done` and
+5. **Sync status lines**: set `agent-spec/<slug>/tasks.md`'s `## Status` to `✅ Done` and
    `agent-spec/<slug>/plan.md`'s `> Status:` line to `✅ Done` in the same step — do not
    leave one updated and the other stale.
 
@@ -306,11 +343,6 @@ Before stopping, physically re-read `agent-spec/<slug>/tasks.md` and run:
 ```bash
 grep -E '^\s*- \[ \]|^\s*- 🔄' agent-spec/<slug>/tasks.md
 ```
-
-Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
-`~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
-updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup, and its rules override the
-defaults below.
 
 Any output means you are not done. Every task must be `[x] ✓` before declaring
 this session complete. `⏸` (blocked) tasks are excluded from this grep by design —

@@ -39,6 +39,22 @@ finishing, update your memory with working commands, discovered flakes, and setu
 - Before calling tsc/lint/test output a regression, compare it with any known pre-existing
   baseline (memory, or the same command on the base commit when cheap) and label each failure
   new or pre-existing.
+- A failure in a file the change did not touch, a 0 ms result, a worker timeout, or a deadlock gets
+  one re-run before you report it. Run the re-run serially (e.g. `-n0`) when the runner supports it.
+  Report that you re-ran it and the re-run result.
+- A failure that looks like config (an auth or security toggle, a wrong default) gets one re-run
+  with local `.env` loading disabled before you call it a code failure. If the harness denies a
+  read of `.env`, stop and report it as an environment blocker.
+
+## Environment
+
+- The shell is zsh. An unquoted `$FILES` does not word-split, so use an array or an explicit list.
+- macOS has no `timeout` binary (exit 127). Do not rely on it.
+- The shell cwd can reset between calls, so use absolute paths.
+- A foreground command stops at 600 s. Run a long suite in the background: redirect its output to a
+  log file outside the repo (the scratchpad), end the command with `; echo EXIT=$?`, and poll the
+  log in short calls.
+- Stop a process by its PID (`$!`), never by `pkill -f`.
 
 ## Code-gen session files (context only)
 

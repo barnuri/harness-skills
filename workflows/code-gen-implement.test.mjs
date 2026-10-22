@@ -12,11 +12,12 @@
 //   - a task whose files cannot be enumerated is serial no matter what the caller claimed
 //   - a claimed no-op skips review only when a cheap git-evidence agent confirms a clean diff;
 //     a dirty diff or an unverifiable claim (no file scope) runs the full review instead
-//   - the reviewer's prompt never carries the implementer's summary (priming)
+//   - the reviewer prompt omits the implementer summary but carries claimed deviations/blast radius
+//   - IMPL_SCHEMA admits deviations/blast_radius and both reach the caller
 //   - a dead/skipped implement agent surfaces as blocked instead of vanishing from the results
 //   - bad args fail loudly rather than fanning out over garbage
 //
-// Run: node workflows/code-gen-implement.test.mjs
+// Run: node claude-user-scope/workflows/code-gen-implement.test.mjs (from the repo root; workflows/ is a symlink to it)
 
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -221,6 +222,45 @@ await run({ tasks: [{ id: 'T1', description: 'a', files: ['a.py'], parallel_safe
 console.log('--- reviewer prompt isolation ---')
 check('reviewer prompt has no implementer summary', !promptCapture[0].includes('SECRET-IMPL-REASONING'))
 check('reviewer told to read the diff itself', /git diff/.test(promptCapture[0]))
+
+// --- 7b. deviations and blast radius: schema, implement prompt, review prompt, result ---
+calls.length = 0
+const implPrompts = []
+const reviewPrompts = []
+const implSchemas = []
+const deviationAgent = async (prompt, opts) => {
+    const id = opts.label.split(':')[1]
+    if (opts.phase === 'Implement') {
+        implPrompts.push(prompt)
+        implSchemas.push(opts.schema)
+        return {
+            task_id: id, status: 'ok', summary: 's', files_written: ['a.py'], no_op: false,
+            deviations: ['DEV-kept-alias'], blast_radius: ['BLAST-tests/golden.test.ts'],
+        }
+    }
+    reviewPrompts.push(prompt)
+    return { task_id: id, verdict: 'satisfied', findings: [] }
+}
+res = await run({ tasks: [{ id: 'T1', description: 'a', files: ['a.py'], parallel_safe: false }] }, deviationAgent)
+console.log('--- deviations and blast radius ---')
+const props = implSchemas[0].properties
+check('schema declares deviations as string array', props.deviations && props.deviations.type === 'array' && props.deviations.items.type === 'string')
+check('schema declares blast_radius as string array', props.blast_radius && props.blast_radius.type === 'array' && props.blast_radius.items.type === 'string')
+check('both stay optional', !implSchemas[0].required.includes('deviations') && !implSchemas[0].required.includes('blast_radius'))
+check('implement prompt asks for both', /deviations/.test(implPrompts[0]) && /blast_radius/.test(implPrompts[0]))
+check('review prompt carries deviations', reviewPrompts[0].includes('DEV-kept-alias'))
+check('review prompt carries blast radius', reviewPrompts[0].includes('BLAST-tests/golden.test.ts'))
+check('result carries deviations', res.tasks[0].deviations.length === 1 && res.tasks[0].deviations[0] === 'DEV-kept-alias')
+check('result carries blast_radius', res.tasks[0].blast_radius[0] === 'BLAST-tests/golden.test.ts')
+
+// Absent fields: no empty headings in the review prompt, empty arrays in the result.
+calls.length = 0
+promptCapture.length = 0
+res = await run({ tasks: [{ id: 'T1', description: 'a', files: ['a.py'], parallel_safe: false }] }, capturingAgent)
+check('no deviation heading when none claimed', !/Claimed deviations/.test(promptCapture[0]))
+check('no blast radius heading when none claimed', !/Claimed blast radius/.test(promptCapture[0]))
+check('review prompt keeps its blank separator lines', /\n\nPrecision over volume/.test(promptCapture[0]))
+check('result defaults both to []', Array.isArray(res.tasks[0].deviations) && res.tasks[0].deviations.length === 0 && res.tasks[0].blast_radius.length === 0)
 
 // --- 8. budget floor skips review, loudly ---
 calls.length = 0
