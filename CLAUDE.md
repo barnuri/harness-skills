@@ -68,4 +68,4 @@ generated file are in `skills/dev-guidelines/SKILL.md` ("Offer to generate a con
 ## Tests
 
 Run the test scripts next to the code you change: `hooks/*.test.sh`,
-`skills/arch-design/scripts/*.test.sh`, and `node workflows/code-gen-implement.test.mjs`.
+`skills/arch-design/scripts/*.test.sh`, `skills/arch-reviewer/scripts/*.test.sh`, and `node workflows/code-gen-implement.test.mjs`.

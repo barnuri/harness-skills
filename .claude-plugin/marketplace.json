@@ -20,6 +20,7 @@
         "./skills/cr",
         "./skills/arch-design",
         "./skills/arch-verify",
+        "./skills/arch-reviewer",
         "./skills/agent-spec",
         "./skills/skills-evolvement",
         "./skills/rca",

@@ -63,10 +63,9 @@ writing it** — that is the default, not the fallback. A `Q:` line is for a que
 outside this session can answer (another team, product, an unavailable owner); anything the user
 sitting here can decide should be decided now and written as a decision row, not deferred.
 
-Phrase each question with 2–4 concrete options and a one-line consequence per option; the harness
-appends "Other" for free text. Batch questions that surface together into one call (up to 4). Use
-plain prose only when the answer cannot be shaped as options. Never guess and never leave a
-bracket placeholder.
+Ask in rounds over a decision tree, with 2–4 options and a recommended answer per question.
+Read [grilling.md](references/grilling.md) before the first ask: it has the question shape and the
+round rules.
 
 On reply: delete the `Q:` line, add one row to the decisions table under Proposed Approach, and
 note the reasoning in Document history.
@@ -321,6 +320,9 @@ bash scripts/render_design_docx.test.sh
 Tell the user the full path of every file written, and offer to iterate on any section. If the
 document still has open `Q:` lines, say so explicitly — those are what block the design being
 approved.
+
+If the `arch-reviewer` skill is installed, offer it before the design goes to review. It attacks
+the draft for weak spots and can grill the author on the open decisions.
 
 If anything in this round touched, or wanted to touch, an already-approved section, lead with that.
 It matters more than the file list: it is the one outcome the user cannot discover by reading the

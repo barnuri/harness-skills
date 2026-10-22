@@ -14,6 +14,7 @@ its fallback when a harness lacks them.
 | `cr` | Reviews a diff, branch, or PR with parallel agents and confidence-scored findings |
 | `arch-design` | Writes a design doc from a template and renders it to self-contained HTML (with review annotations) and Word |
 | `arch-verify` | Checks whether the implementation matches its design doc |
+| `arch-reviewer` | Attacks a design doc (.md, .docx, .html) for weak spots and can grill its author |
 | `rca` | Writes a root cause analysis, optionally pulling from an issue tracker or log tool |
 | `handoff` | Compacts the session into a resume document for a fresh session |
 | `skills-evolvement` | Audits and improves the skills in a skills repo |

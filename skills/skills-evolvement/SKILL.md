@@ -210,8 +210,24 @@ findings file. A source bundled inside an installed program (no public URL) is r
 local install: take its version from the program's version command. When the program is not
 installed, report the source as "not checked". Skip Agent C when the session has no web access, and note it in `plan.md`.
 
+**Agent D — Community skill repos (one background subagent per repo):**
+Read the sources file: `~/.config/harness-skills/skills-evolvement/community-skill-sources.md`
+when it exists, else [community-skill-sources.md](references/community-skill-sources.md). It lists
+public skill repos to learn from and the last commit SHA this skill read of each. For each repo,
+spawn one subagent with web and `gh` access. Tell it to:
+1. Get the repo's latest commit SHA. When it equals the recorded SHA, report "unchanged" and stop.
+2. Read the diff since the recorded SHA. Read every new or changed skill in full.
+3. Match each of its skills to the audited skill with the same job, when one exists.
+4. Return at most 10 ranked ideas, each marked ADOPT, ADAPT, or SKIP with a one-line reason and
+   the audited skill and section it changes. Skip an idea that the sources file lists as adopted.
+5. Write its findings to `agent-spec/<slug>/community-<repo>.md` with a Sources table (repo, URL,
+   SHA, read date).
+
+Skip Agent D when the session has no web access, and note it in `plan.md`.
+
 Wait for all agents. Synthesize findings into `plan.md` under `## Phase 1 Findings`. Every
-ADOPT or ADAPT idea for the review skill becomes a Phase 2 task.
+ADOPT or ADAPT idea for the review skill, and every ADOPT or ADAPT idea from Agent D, becomes a
+Phase 2 task.
 
 ---
 
@@ -307,6 +323,8 @@ After all tasks are complete:
    sources file Agent C read. When that is the copy inside this skill and the skill folder is a
    plugin install, write to `~/.config/harness-skills/skills-evolvement/official-review-sources.md`
    instead, so a plugin update does not reset it. The next run compares against these versions.
+   Do the same for the community sources file that Agent D read: update each repo's SHA and read
+   date, and add each adopted idea to its "Ideas already adopted" table.
 
 4. **Post a brief summary** to the user: what was found, what was changed, what patterns
    to watch for next time.
