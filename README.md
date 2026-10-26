@@ -17,6 +17,7 @@ its fallback when a harness lacks them.
 | `arch-reviewer` | Attacks a design doc (.md, .docx, .html) for weak spots and can grill its author |
 | `rca` | Writes a root cause analysis, optionally pulling from an issue tracker or log tool |
 | `handoff` | Compacts the session into a resume document for a fresh session |
+| `done-verify` | Checks that every user message was handled, every agent-spec task file is closed, and no background work is still running |
 | `skills-evolvement` | Audits and improves the skills in a skills repo |
 | `context-declutter` | Measures always-loaded context files and splits bloated sections into on-demand references |
 | `agent-spec` | Lists, resumes, and cleans `agent-spec/` session folders, and prunes stale session pointers |

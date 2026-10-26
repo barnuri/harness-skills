@@ -141,6 +141,9 @@ a recurring failure, not a rarity): if an agent idles or completes without a rep
 its findings **once**; if it still delivers nothing, stop it (`TaskStop`), perform that
 reviewer's check yourself inline, and record the substitution in the review output. Never mark
 a verification done while its mechanism is an open background task with no delivered result.
+The reverse also happens: an agent delivers its report while a background command of its own is
+still running, and it stays listed as running. Once you have an agent's report, stop it
+(`TaskStop`) if it is still listed as running.
 
 The agents report **every** issue they find (tagged `confidence` + `severity`) and end with a
 3-way verdict line (`APPROVED` / `CORRECTION_NEEDED` / `INSUFFICIENT_INFO`) — they do not

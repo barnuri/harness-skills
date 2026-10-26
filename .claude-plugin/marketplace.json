@@ -25,6 +25,7 @@
         "./skills/skills-evolvement",
         "./skills/rca",
         "./skills/handoff",
+        "./skills/done-verify",
         "./skills/context-declutter"
       ]
     }

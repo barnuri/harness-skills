@@ -65,7 +65,7 @@ Fill every section of the template with **real content**. Concrete beats vague e
 ## Step 4: Save and confirm
 
 1. Write the file with the Write tool.
-2. Tell the user the full file path.
+2. Tell the user the absolute file path.
 3. Point out any `TBD`s you left and offer to fill them in or expand any section.
 
 ## Style notes

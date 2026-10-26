@@ -150,7 +150,7 @@ user, in this order:
 1. The verdict line.
 2. The top 3 findings, with their `F<n>` codes.
 3. The count of findings by severity, and the count of open challenge questions.
-4. The full path of the report.
+4. The absolute path of the report.
 5. Anything you skipped: a lens, the coding standards, a file that did not parse.
 
 ## Harness notes

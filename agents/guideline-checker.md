@@ -110,6 +110,10 @@ something as "pre-existing outside the diff".
 - zsh: quote globs (`--include="*.ts"`), pass file lists as arrays, never `eval`. If a command is
   denied, mark the dependent finding unverified rather than retrying.
 - Re-read each assigned file right before writing the report — concurrent sessions edit them.
+- **Leave no background command.** Scope searches to the assigned files and their direct
+  consumers, never the whole repo or `~`. If a command moves to the background (it ran past the
+  Bash timeout), read its output or stop it (`TaskStop`) before you send the report. An agent
+  that reports with a command still running stays listed as running in the caller's UI.
 - **Reviewing at a PR ref.** When the file is not checked out at the reviewed ref, read it with
   `git show "${REF}:path"` (the braces stop zsh's `:a` modifier). Run the formatter on stdin,
   for example `git show "${REF}:path" | npx prettier --check --stdin-filepath path`. If the PR is

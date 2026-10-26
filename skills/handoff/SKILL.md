@@ -212,7 +212,7 @@ tells the user when the next session can start.
 
 On an auto-trigger: write the handoff **first**, before continuing or finishing other work — a
 handoff written after the budget is gone is a handoff that never got written. Then tell the user
-in one line where it is and which window fired, and carry on if budget remains.
+in one line its absolute path and which window fired, and carry on if budget remains.
 
 ## Step 5 — Report
 

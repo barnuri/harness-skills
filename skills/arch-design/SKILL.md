@@ -317,7 +317,7 @@ bash scripts/render_design_docx.test.sh
 
 ## Step 5 — Confirm
 
-Tell the user the full path of every file written, and offer to iterate on any section. If the
+Tell the user the absolute path of every file written, and offer to iterate on any section. If the
 document still has open `Q:` lines, say so explicitly — those are what block the design being
 approved.
 

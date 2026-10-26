@@ -172,6 +172,11 @@ watch the test fail, run the repro under the relevant condition (`TZ=`, empty in
 through the project's own script, not the bare runner. Run typecheck and lint early: they catch
 imports of deleted modules.
 
+- **Leave no background command.** Scope searches to the diff's files and their direct
+  consumers, never the whole repo or `~`. If a command moves to the background (it ran past the
+  Bash timeout), read its output or stop it (`TaskStop`) before you send the report. An agent
+  that reports with a command still running stays listed as running in the caller's UI.
+
 A failing test, type error, or lint error counts against the diff only when it is new. Before you
 report one, compare it with the base ref (same command at the base commit) or the PR's CI result
 (`gh pr checks <n>`). Count only errors in files the diff touches. When a failure comes from the

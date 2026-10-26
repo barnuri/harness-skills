@@ -143,7 +143,7 @@ PR: #<n>   # omit when there is no PR
 
 # Architecture Design Alignment
 
-**Design doc:** [full path to design file]
+**Design doc:** [absolute path to design file]
 **Last checked:** [YYYY-MM-DD] at commit `[short-hash]`
 **Overall:** [Fully aligned / Mostly aligned / Partially aligned / Not aligned]
 
@@ -197,7 +197,7 @@ After writing `agent-spec/<slug>/arch-design-diff.md`, output a concise summary 
 ```
 ## Arch Verify — [YYYY-MM-DD] (commit: [hash])
 
-**Design:** [full path to design file]
+**Design:** [absolute path to design file]
 **Verdict:** [Fully aligned / Mostly aligned / Partially aligned / Not aligned]
 
 | Status | Count |
