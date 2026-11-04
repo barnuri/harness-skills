@@ -5,7 +5,7 @@ description: >
   to the terminal title and status line, and defines the shared session-folder format. Invoked
   at bootstrap by skills that keep per-session state (arch-verify, skills-evolvement, and
   others); use directly only when debugging slug or terminal-title behavior.
-allowed-tools: Bash(git rev-parse *), Bash(mkdir *), Bash(printf *), Bash(echo *), Bash(cat *), Read, Write, Edit
+allowed-tools: Bash(git rev-parse *), Bash(mkdir *), Bash(printf *), Bash(echo *), Bash(cat *), Bash(python3 *), Read, Write, Edit
 user-invocable: false
 ---
 
@@ -153,6 +153,15 @@ resume, or clean sessions (the `agent-spec` skill) work without knowing which sk
   | `- ⏸` | Blocked, waiting on a question |
   | `- [x] ✓` | Done |
 
+- **`answers.md`** is the canonical question-and-answer record. Create it when the session folder is created. Record task-related user questions, direct answers, decisions, corrections, and unresolved questions with their status. Do not copy full conversation, hidden reasoning, secrets, or unrelated personal details. Keep task status in `tasks.md` and design rationale in `plan.md`. On resume, read `answers.md` first and add missing exchanges before continuing. If nobody asked a question, write `No user questions yet.`
+  - **Board format.** Write each exchange as one numbered card, in this order:
+    1. A session title line as a blockquote: `> Session: <short name>`.
+    2. One `## Questions and Answers` heading, then one `### Q<n> — <question>` heading per question, numbered from `Q1` in order.
+    3. Under each heading, one `**Answer:**` paragraph. Keep it to one to three short sentences. Put constraints in the answer only when they affect the decision.
+    4. A `---` line between entries. The renderer uses it to split the cards.
+    5. Open items go under `## Verify during implementation` as short checklist bullets. Use `## Open Decisions` only when the user has not decided the question yet. Do not mix settled decisions and verification tasks.
+    6. Never put two questions under one heading. Never repeat the same requirement across multiple entries. Drop implementation details already captured in `plan.md` or `tasks.md`.
+- **`answers.html`** is a generated, self-contained view of `answers.md`. The renderer shows each `### Q<n>` entry as a restrained card with the question beside its number and the answer below. It supports light and dark themes. Never edit it by hand. After creating or changing `answers.md`, run `python3 "<skill-dir>/scripts/render_answers.py" <session-folder>/answers.md`. The script writes `answers.html` beside the source. When resuming, regenerate it before finishing.
 - **`plan.md`** (optional) carries a `> Status:` line that mirrors the `tasks.md` status.
 - **Owner.** `tasks.md` names the skill that created the session on an `Owner: <skill-name>`
   line in its header. A resume goes back through that skill.

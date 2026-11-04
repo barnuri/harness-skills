@@ -57,8 +57,9 @@ ask tool exists). Run one mode per invocation.
 1. Run the shared scan.
 2. For every In progress folder, read `tasks.md` and collect: the slug, the `Owner:` skill, the
    goal (first paragraph under `## Goal` or the title), `Last Updated`, a short list of open task
-   lines (`- [ ]`, `- 🔄`, `- ⏸`), and blockers: `⏸` lines plus any `🔴 Open` row in `plan.md`'s
-   `Open Questions — Blocking` table. Three to five bullets per session.
+   lines (`- [ ]`, `- 🔄`, `- ⏸`), blockers: `⏸` lines plus any `🔴 Open` row in `plan.md`'s
+   `Open Questions — Blocking` table, and the latest two entries from `answers.md` when present.
+   Three to five bullets per session. Include the `answers.html` path when it exists.
 3. Report, in this order:
    1. **Unfinished sessions:** slug, owner, last updated, goal, open tasks, blockers.
    2. **Orphan folders:** slug list with a one-line note.

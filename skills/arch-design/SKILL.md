@@ -81,7 +81,9 @@ and asks.
 ## Step 2 — Resolve the location
 
 Drafts live in `agent-spec/<slug>/design.md`. Invoke the `session-slug` skill to resolve the slug —
-never derive it yourself.
+never derive it yourself. Read `agent-spec/<slug>/answers.md` before asking or deciding anything.
+Create it if missing. Record each user question and its direct answer or decision. Regenerate
+`answers.html` with the session-slug renderer after each update.
 
 When `status:` flips to `Approved`, **promote** the document: copy it to
 `docs/architecture/<area>/<kebab-case-name>.md`, using the `area` field from the front matter as

@@ -35,7 +35,7 @@ After the Session Bootstrap, **immediately create skeleton versions of all expec
 
 ### Session Continuation rules
 
-Apply only when `session-slug` (its Step 3) resolved to an existing folder (in-context slug, explicit user resume, or a re-run on the same PR or branch). On a re-run, re-read the current code before trusting `tasks.md`: check `git log` since the session's last update and `git diff` on each task's files, so tasks finished or changed outside the session are marked accordingly. When the branch has a PR, also fetch new review comments (`ghx pr view <n> --json comments,reviews`) and add each unaddressed one as a task. Check `agent-spec/<slug>/tasks.md`:
+Apply only when `session-slug` (its Step 3) resolved to an existing folder (in-context slug, explicit user resume, or a re-run on the same PR or branch). On a re-run, re-read the current code before trusting `tasks.md`: check `git log` since the session's last update and `git diff` on each task's files, so tasks finished or changed outside the session are marked accordingly. When the branch has a PR, also fetch new review comments (`ghx pr view <n> --json comments,reviews`) and add each unaddressed one as a task. Read `agent-spec/<slug>/answers.md` first and append any user question, answer, decision, or correction that is missing. Then check `agent-spec/<slug>/tasks.md`:
 - **Status `🔄 In progress`**: **The very first action — before any analysis, exploration, or implementation — is to open `agent-spec/<slug>/tasks.md` and append the new request as a new phase or tasks.** Write the file immediately. Then update `agent-spec/<slug>/plan.md` if the addition meets Medium/Large criteria, and resume from the first unchecked task. A task already marked `🔄` may have landed before the session was cut off: check `git status --porcelain` (untracked files included) and `git diff` on its files first, and if the change is there, verify and finish it instead of re-implementing it (or re-dispatching it to an implementer). Also create native tasks for the appended items (see Native Task Integration).
 - **Status `✅ Done`**: treat as a fresh session — overwrite both files and proceed below.
 
@@ -43,13 +43,13 @@ Never ask "should I continue?" on resume — read, decide, act.
 
 ### Skeleton creation (first run or fresh session)
 
-Create both files **right now**, before any analysis: each gets the standard timestamp header
+Create `plan.md`, `tasks.md`, and `answers.md` **right now**, before any analysis. Each gets the standard timestamp header
 (see Timestamp Headers), then `plan.md` gets `# Implementation Plan: [FEATURE]`, a
 `> Status: 🔄 Analysing` line, and empty `## Summary` / `## Technical Context` sections marked
 `[filling in…]`; `tasks.md` gets `# Tasks: [Feature]`, `## Status` = `🔄 In progress`, and one
 placeholder task line written as `- 🔄 Planning`. A `- [ ]` placeholder trips the Stop hook while
 the planner is still running. Both are **live documents** — update them continuously as understanding
-grows, not in one batch at the end.
+grows, not in one batch at the end. Create `answers.md` with `# Questions and Answers` and a brief note that no questions have been asked yet.
 
 ## Developer Guidelines
 
@@ -89,7 +89,7 @@ Some decisions are the user's to make, not yours. When one comes up — during p
 2. Append a row to `agent-spec/<slug>/plan.md`'s `## 🚧 Open Questions — Blocking` table (create that section at the end of the file if this plan predates the convention). One row per question: `| Q<N> | <question> | <Task/Phase it blocks> | 🔴 Open |`.
 3. If the item is already in `tasks.md`, mark it `⏸` instead of `🔄`/`[ ]` — this marker is intentionally excluded from the Completion Gate grep (see Step 3) so you can legitimately stop and wait instead of looping.
 4. **Ask through `AskUserQuestion` — that is the default, not the fallback.** Phrase the question with 2–4 concrete options and a one-line consequence per option; the harness always appends "Other" for free-text. Batch questions that surface together into one call (up to 4). Drop to plain prose only when the answer genuinely cannot be shaped as options (e.g. "paste the endpoint URL"). Never substitute a guess for the answer.
-5. On reply: flip the plan.md row to `🟢 Resolved — <decision>`, unblock the task (`⏸` → `[ ]` or straight into `🔄`), and continue.
+5. On reply: record the question and direct answer or decision in `answers.md`. Then flip the plan.md row to `🟢 Resolved — <decision>`, unblock the task (`⏸` → `[ ]` or straight into `🔄`), and continue.
 
 Gate A/B below are the plan-writing checkpoints specifically; this section covers everything else, including mid-implementation surprises.
 

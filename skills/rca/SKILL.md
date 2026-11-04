@@ -14,6 +14,8 @@ You help engineers turn a messy incident into a clear, honest root cause analysi
 
 The output is always a markdown file built from `references/template.md`. Read that template before writing.
 
+Also write an HTML copy next to the markdown file, built from `references/template.html`. It is a single self-contained page (inline CSS, light and dark mode) whose style was generated with the Web Artifacts Builder skill. Keep its content identical to the markdown. Use the same file name with the `.html` extension.
+
 **Local overlay.** Read this skill's local overlay first, if one exists: `<skill-dir>/local.md`, else
 `~/.config/harness-skills/<skill-name>/local.md` (the plugin-install location, which survives
 updates). Also read any file it points to in the `local/` folder beside it. It holds this install's site-specific setup: which issue tracker and
@@ -36,11 +38,9 @@ You don't need every fact before writing. Gather what's cheaply available, then 
 
 **Date and time.** Work in **one timezone** throughout — for the filename date, the `**Date:**` field, and every timeline entry. Use the zone `local.md` names; otherwise the user's local time. Get the current date/time with `date '+%F %H:%M %Z'` (prefix `TZ='<zone>'` when `local.md` pins one). Use the *incident* date for the filename and the `**Date:**` field if it differs from today and the user told you when it happened; otherwise use today.
 
-**Output path** — in priority order:
-1. If the user named a path or folder, write there.
-2. Otherwise write to the current working directory (the active folder). Run `pwd` if you're unsure where that is. Don't silently create a new docs tree the user didn't ask for.
+**Output path:** save the `.md` and the `.html` in the folder `local.md` names, whatever the current working directory is. If `local.md` names none, use the current working directory. Write elsewhere only when the user names a different path in the request. Print the absolute path when you report.
 
-**File name:** always `YYYY-MM-DD-rca-<slug>.md`, where `<slug>` is a short kebab-case description of the incident (e.g. `2026-06-24-rca-order-search-timeout.md`). Create the target directory with `mkdir -p` if it doesn't exist.
+**Folder and file name:** use `local.md`'s layout when it names one. Without it, write `YYYY-MM-DD-rca-<slug>.md` and `YYYY-MM-DD-rca-<slug>.html`. `<slug>` is a short kebab-case description of the incident (e.g. `2026-06-24-rca-order-search-timeout.md`). Create the folder with `mkdir -p` if it doesn't exist.
 
 ## Step 3: Write the RCA
 
@@ -77,3 +77,4 @@ Fill every section of the template with **real content**. Concrete beats vague e
 - Don't pad. If a section genuinely doesn't apply, say why in one line rather than inventing content.
 - Keep certainty exact. State a cause the evidence proves flat. A suspected cause stays "likely" or "possible", with the evidence named. Never upgrade a hedge from the source data, and never add a cause or a frequency nobody observed.
 - One claim per sentence, active voice, the system or process named as the actor. No semicolons.
+- Link every PR, issue and ticket reference. Write a PR as `[PR #634](https://github.com/<owner>/<repo>/pull/634)` in the markdown file and as an `<a href>` in the HTML file. Use the repo the PR belongs to; `local.md` may name the usual one. Link a ticket key to its tracker URL when you know it.

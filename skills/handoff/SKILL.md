@@ -37,8 +37,9 @@ re-derive slug logic here — `session-slug` owns it, including the rule that an
 session's folder is **never** adopted.
 
 The handoff is then always written to `agent-spec/<slug>/handoff.md`, alongside whatever other
-state this session already has (`plan.md`, `tasks.md`, `code-review.md`, …). `agent-spec/` is
-gitignored, so the handoff never pollutes a commit.
+state this session already has (`plan.md`, `tasks.md`, `answers.md`, `answers.html`, `code-review.md`, …). `agent-spec/` is
+gitignored, so the handoff never pollutes a commit. Read `answers.md` before writing the handoff.
+Create it if missing. Record any new user questions and answers. Regenerate `answers.html` after updates.
 
 **Write it at most once per session.** If `agent-spec/<slug>/handoff.md` already exists,
 *refresh it in place* (overwrite, preserving the `Created:` timestamp) — never append a second

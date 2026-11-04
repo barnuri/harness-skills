@@ -1,0 +1,158 @@
+<!doctype html>
+<!--
+  RCA HTML template. Style generated with the Web Artifacts Builder skill and the ui-ux-pro-max skill.
+  Single self-contained file: inline CSS, no JS, light and dark mode.
+  Replace every {placeholder}. Delete the <section> or rows that do not apply.
+  Mark unknown values with <span class="tbd">TBD</span>.
+  Action type tag classes: prevent | detect | mitigate. Status tag classes: done | open.
+  Root Cause steps go in the <ol class="chain">, one <li> per causal step.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RCA {Short Name}</title>
+<style>
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --text:#1c1b19; --muted:#6b6862; --line:#e4e1da;
+  --accent:#b4441c; --accent-soft:#fbeee8; --ok:#1f7a4d; --ok-soft:#e5f4ec;
+  --warn:#9a6a00; --warn-soft:#fdf3d9; --code:#efece6;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#151513; --surface:#1e1d1b; --text:#ecebe7; --muted:#9b978f; --line:#33312d;
+    --accent:#ee8a62; --accent-soft:#2c1d17; --ok:#5fcf98; --ok-soft:#16261e;
+    --warn:#e6b84d; --warn-soft:#2a2314; --code:#2a2825;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:40px 16px 80px}
+header{border-left:4px solid var(--accent);padding-left:16px;margin-bottom:28px}
+.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-size:28px;line-height:1.25;margin:6px 0 14px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.chip b{color:var(--text);font-weight:600}
+.chip.sev{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.chip.sev b{color:var(--accent)}
+.chip.status{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.chip.status b{color:var(--warn)}
+section{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 24px;margin:16px 0}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:600}
+h3{font-size:15px;margin:18px 0 6px}
+p{margin:8px 0}
+ol,ul{margin:8px 0;padding-left:22px}
+li{margin:4px 0}
+code{background:var(--code);padding:1px 6px;border-radius:4px;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+.tldr{border-color:var(--accent);background:var(--accent-soft)}
+.tldr h2{color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-bottom:2px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.when{white-space:nowrap;font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px}
+.tag.prevent{background:var(--accent-soft);color:var(--accent)}
+.tag.detect{background:var(--warn-soft);color:var(--warn)}
+.tag.mitigate{background:var(--ok-soft);color:var(--ok)}
+.tag.done{background:var(--ok-soft);color:var(--ok)}
+.tag.open{background:var(--warn-soft);color:var(--warn)}
+.tbd{color:var(--warn);font-weight:600}
+.chain{counter-reset:s;list-style:none;padding:0}
+.chain li{counter-increment:s;position:relative;padding:2px 0 10px 40px;margin:0}
+.chain li::before{content:counter(s);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:13px;font-weight:600;display:grid;place-items:center}
+.chain li:not(:last-child)::after{content:"";position:absolute;left:12px;top:28px;bottom:0;width:2px;background:var(--line)}
+.scroll{overflow-x:auto}
+@media (max-width:600px){h1{font-size:23px}section{padding:16px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="kicker">Root Cause Analysis</div>
+  <h1>{Incident title, specific and one line}</h1>
+  <div class="meta">
+    <span class="chip"><b>Date</b> {YYYY-MM-DD} ({TZ})</span>
+    <span class="chip"><b>Author</b> {author}</span>
+    <span class="chip sev"><b>Severity</b> {SEV1 | SEV2 | SEV3}</span>
+    <span class="chip status"><b>Status</b> {Investigating | Mitigated | Resolved}</span>
+  </div>
+</header>
+
+<section>
+  <h2>Goal</h2>
+  <p>{What the team was trying to do, or the normal job the affected system does.}</p>
+</section>
+
+<section class="tldr">
+  <h2>Summary: What Broke</h2>
+  <p>{2 to 4 sentences: what failed, who or what was impacted, how long, how it ended. No root cause detail.}</p>
+</section>
+
+<section>
+  <h2>Root Cause</h2>
+  <p>Surface symptom: {symptom}</p>
+  <ol class="chain">
+    <li>{Causal step 1}</li>
+    <li>{Causal step 2}</li>
+    <li>{Underlying cause}</li>
+  </ol>
+
+  <h3>Unconfirmed</h3>
+  <ul>
+    <li><code>Q1</code> {Open question or hypothesis}</li>
+  </ul>
+
+  <h3>Contributing Factors</h3>
+  <ul>
+    <li>{What made the impact worse or slowed detection. Remove this block if none.}</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Timeline ({timezone})</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>When</th><th>Event</th></tr></thead>
+    <tbody>
+      <tr><td class="when">{YYYY-MM-DD HH:MM}</td><td>{First symptom or trigger}</td></tr>
+      <tr><td class="when">{YYYY-MM-DD HH:MM}</td><td>{Detection}</td></tr>
+      <tr><td class="when">{YYYY-MM-DD HH:MM}</td><td>{Diagnosis milestone}</td></tr>
+      <tr><td class="when">{YYYY-MM-DD HH:MM}</td><td>{Mitigation applied}</td></tr>
+      <tr><td class="when">{YYYY-MM-DD HH:MM}</td><td>{Resolved}</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Affected Resources</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Resource</th><th>Name</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>{Resource}</td><td>{Name or <span class="tbd">TBD</span>}</td><td>{Note}</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Action Items</h2>
+  <p>Done during incident: {what was already fixed}.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Action</th><th>Type</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>{Concrete action}</td><td><span class="tag prevent">Prevent</span></td><td>{owner or <span class="tbd">TBD</span>}</td><td>{YYYY-MM-DD or <span class="tbd">TBD</span>}</td><td><span class="tag open">Open</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Open Questions</h2>
+  <ul>
+    <li><code>Q1</code> {Question}</li>
+  </ul>
+</section>
+</main>
+</body>
+</html>

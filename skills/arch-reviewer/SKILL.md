@@ -37,7 +37,8 @@ install's site-specific setup, and its rules override the defaults below.
 
 Invoke the `session-slug` skill. It resolves `agent-spec/<slug>/`, adds `agent-spec/` to the gitignore, and
 returns the `agent_harness` token (its Step 5). When the skill is unavailable, derive a
-date-prefixed kebab-case slug yourself.
+date-prefixed kebab-case slug yourself. Read `answers.md` before asking or deciding anything. Create it if
+missing, record user questions and answers there, and regenerate `answers.html` with the session-slug renderer.
 
 The report file is `agent-spec/<slug>/arch-review.<harness>-<model>.md`. `<model>` is your own
 model id. When the file already exists, this is a re-run. Follow the Re-run rules in

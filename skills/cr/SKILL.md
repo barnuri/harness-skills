@@ -38,7 +38,7 @@ You maintain a persistent `code-review.<harness>-<model>.md` file under `agent-s
 
 ## Slug Resolution
 
-Invoke the `session-slug` skill to resolve which `agent-spec/<slug>/` folder this review belongs to (reuses an in-context slug from a same-session code-gen run, or derives a fresh one from the review target), to ensure `agent-spec/` is gitignored, and to get the `agent_harness` token (its Step 5). Do not re-derive the slug or the gitignore check yourself — `session-slug` is the single source of truth, shared with code-gen, arch-verify, and skills-evolvement.
+Invoke the `session-slug` skill to resolve which `agent-spec/<slug>/` folder this review belongs to (reuses an in-context slug from a same-session code-gen run, or derives a fresh one from the review target), to ensure `agent-spec/` is gitignored, and to get the `agent_harness` token (its Step 5). Do not re-derive the slug or the gitignore check yourself — `session-slug` is the single source of truth, shared with code-gen, arch-verify, and skills-evolvement. Read `answers.md` before asking or deciding anything. Create it if missing. Record every task-related user question and its direct answer or decision. Regenerate `answers.html` with the session-slug renderer after each update.
 
 **Output filename**: `agent-spec/<slug>/code-review.<harness>-<model>.md`, where `<harness>` is what `session-slug` returned and `<model>` is your own model id (you know this about yourself — e.g. `claude-sonnet-5`). This lets multiple harnesses/models review the same slug in parallel without overwriting each other's file. Use this exact filename everywhere below that says `code-review.md`.
 

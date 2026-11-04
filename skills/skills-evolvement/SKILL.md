@@ -54,7 +54,7 @@ reset, or any other git mutation — leave every change in the working tree.
 
 ## Bootstrap
 
-Invoke the `session-slug` skill to derive a fresh slug (`YYYY-MM-DD-skills-evolvement` pattern), ensure `agent-spec/` is gitignored, and publish it to the terminal title/status line. Do not re-derive the slug or the gitignore check yourself — `session-slug` is the single source of truth, shared with code-gen, cr, and arch-verify. Once resolved, create `agent-spec/<slug>/plan.md` and `agent-spec/<slug>/tasks.md` skeletons (`tasks.md`'s header carries `Owner: skills-evolvement`), then proceed.
+Invoke the `session-slug` skill to derive a fresh slug (`YYYY-MM-DD-skills-evolvement` pattern), ensure `agent-spec/` is gitignored, and publish it to the terminal title/status line. Do not re-derive the slug or the gitignore check yourself — `session-slug` is the single source of truth, shared with code-gen, cr, and arch-verify. Once resolved, create `agent-spec/<slug>/plan.md`, `agent-spec/<slug>/tasks.md`, and `agent-spec/<slug>/answers.md` skeletons (`tasks.md`'s header carries `Owner: skills-evolvement`). Create an initial `answers.html` with the renderer, then proceed. Record each user question and its direct answer or decision in `answers.md`; regenerate `answers.html` after each update.
 
 **Repo rules come from the audited repo.** This skill holds no repo-specific conventions. The
 audited repo's `CLAUDE.md`/`AGENTS.md` (read in Phase 0.2) define them: frontmatter rules, where
